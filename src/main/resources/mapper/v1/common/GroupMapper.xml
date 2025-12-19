@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.admin.profile.mapper.v1.common.GroupMapper">
+<mapper namespace="org.nas.api.mapper.v1.common.GroupMapper">
 
     <insert id="groupCodeCreate">
         insert into group_code (
@@ -17,7 +17,7 @@
         )
     </insert>
 
-    <select id="groupCodeSelect" resultType="org.admin.profile.model.v1.group.GroupSelect">
+    <select id="groupCodeSelect" resultType="org.nas.api.model.v1.group.GroupSelect">
         select
             group_id
             , group_code
