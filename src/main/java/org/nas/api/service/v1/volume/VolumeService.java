@@ -23,13 +23,11 @@ public class VolumeService {
         long total = root.getTotalSpace();      // 전체 용량
         long free = root.getFreeSpace();        // 남은 용량
         long usable = root.getUsableSpace();    // 사용 가능한 용량
-        double usedPercent = (double)(total - usable) / total * 100;
 
         return DiskVolume.builder()
                 .total(total)
                 .free(free)
                 .usable(usable)
-                .usedPercent(usedPercent)
                 .build();
     }
 }

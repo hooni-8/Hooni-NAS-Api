@@ -12,6 +12,4 @@ public class DiskVolume {
     long free;
 
     long usable;
-
-    double usedPercent;
 }
