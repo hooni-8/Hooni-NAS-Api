@@ -1,0 +1,68 @@
+###########################################################################
+### Server 설정
+###########################################################################
+server:
+  servlet:
+    context-path: /${spring.application.root}
+
+###########################################################################
+### Spring 설정
+###########################################################################
+spring:
+  application:
+    root: nas
+    name: nas-api
+
+  datasource:
+    url: ENC(ZxfrRS4btUnUdfCMGyUTkDVt5CyILieo6/OOtRSmtxs6TT6vNhMVg9a8J1NFpX2piV4Z3xHS+t83a2VDnN3xlcnMCR8kbKiC+nzZLht+YTc=)
+    username: ENC(RKeaQzY5fDvxKGF9CdFHYZ/WMinf9QFjOH0Kp7HN+V+qXDj8+d+R9zU14Sbr3cge)
+    password: ENC(KRc6hSseD7fxFfoflw7rxGABZlcoRtzfqjAO4+/i+eOlDT0bVQ4qYpZDMLplneHj)
+
+###########################################################################
+### log config 위치 설정
+###########################################################################
+logging:
+  config: classpath:logback/spring-logback.xml
+
+###########################################################################
+### mybatis 설정
+###########################################################################
+mybatis:
+  type-aliases-package: org.nas.api
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations:
+    - classpath:mapper/**/*Mapper.xml
+
+###########################################################################
+### Swagger 설정
+###########################################################################
+springdoc:
+  api-docs:
+    path: /api-docs
+    groups:
+      enabled: true
+
+  swagger-ui:
+    path: /
+    enabled: true
+    groups-order: ASC
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    doc-expansion: list
+
+  cache:
+    disabled: true
+
+  override-with-generic-response: false
+  model-and-view-allowed: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+###########################################################################
+### jasypt 설정
+###########################################################################
+jasypt:
+  encryptor:
+    password: ${ENCRYPTOR_PROFILE}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.admin.profile.mapper.v1.common.GroupMapper">
+
+    <insert id="groupCodeCreate">
+        insert into group_code (
+            group_id
+            , group_code
+            , group_name
+            , created_by
+        ) values (
+             uuid_in(md5(random()::text || now()::text)::cstring)
+            , #{groupCode}
+            , #{groupName}
+            , #{userCode}
+        )
+    </insert>
+
+    <select id="groupCodeSelect" resultType="org.admin.profile.model.v1.group.GroupSelect">
+        select
+            group_id
+            , group_code
+            , group_name
+          from group_code
+         where delete_yn = 'N'
+    </select>
+
+</mapper>

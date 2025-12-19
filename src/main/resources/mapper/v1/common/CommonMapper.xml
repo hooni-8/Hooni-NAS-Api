@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.admin.profile.mapper.v1.common.CommonMapper">
+
+    <insert id="commonCodeCreate">
+        insert into common_code (
+            group_id
+            , common_id
+            , common_code
+            , common_code_name
+            , created_by
+        ) values (
+            #{groupId}
+            , uuid_in(md5(random()::text || now()::text)::cstring)
+            , #{commonCode}
+            , #{commonCodeName}
+            , #{userCode}
+        )
+    </insert>
+
+    <select id="commonCodeSelect" resultType="org.admin.profile.model.v1.common.CommonSelect">
+        select
+            common_id
+            , common_code
+            , common_code_name
+          from common_code
+         where delete_yn = 'N'
+           and group_id = #{groupId}
+    </select>
+
+
+</mapper>
