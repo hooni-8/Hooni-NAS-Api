@@ -17,7 +17,7 @@ public class VolumeService {
         if (os.contains("windows")) {
             root = new File("C:\\");
         } else {
-            root = new File("/ssd");
+            root = new File("/attachfile");
         }
 
         long total = root.getTotalSpace();      // 전체 용량
