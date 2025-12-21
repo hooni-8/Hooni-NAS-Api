@@ -70,6 +70,8 @@ public class FileService {
 
     @Async("uploadExecutor")
     public void uploadAsync(String userCode, String folderId, List<TempUploadFile> files) {
+        log.info("========= FILE Upload Start =========");
+        String os = System.getProperty("os.name").toLowerCase();
 
         for (TempUploadFile file : files) {
             try {
@@ -90,7 +92,13 @@ public class FileService {
                         today.getDayOfMonth()
                 );
 
-                Path dirPath = Paths.get(BASE_PATH_DEV, relativePath);
+                Path dirPath;
+                if (os.contains("windows")) {
+                    dirPath = Paths.get(BASE_PATH_DEV, relativePath);
+                } else {
+                    dirPath = Paths.get(BASE_PATH, relativePath);
+                }
+
                 Files.createDirectories(dirPath);
 
                 // 4. 실제 저장
