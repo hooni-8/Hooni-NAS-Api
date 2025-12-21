@@ -1,7 +1,7 @@
 package org.nas.api.service.v1.volume;
 
 import lombok.extern.slf4j.Slf4j;
-import org.nas.api.model.v1.volume.response.DiskVolume;
+import org.nas.api.model.v1.volume.DiskVolume;
 import org.springframework.stereotype.Service;
 
 import java.io.File;

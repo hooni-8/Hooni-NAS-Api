@@ -14,7 +14,7 @@ spring:
     name: nas-api
 
   datasource:
-    url: ENC(fxwK2fXAyRsYuLbBAozqJR3qWH8CGznquFQVjRtTPeDAETOn4nHanMhdi6DLcrX8K0PHcr4IXoe1xAlg9p1Z0h24dch4iaBmtcKO+/5x094=)
+    url: ENC(jHJpIdrmQpepmMT+uKzBA55wfxLGr7A4KYaxT1gW33Q7/EmfBLDDk9RONnycS3gdhQm6uKW5EbvEantiwJJH73LkzMuPkojrc7sftlkzuDU=)
     username: ENC(beDx2gXAeAxV+VZd/SkiqMaczaTm3Rj2l0TpY8ogShokNlnu6tVAdjmdpC7o1aSC)
     password: ENC(4SyrWZHyzfkDQqeynwC4NEiGEME4hSF5EDy6TcXnQ864Fuggclf00RrBFbWYu9m0)
 
