@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nas.api.mapper.v1.upload.UploadMapper">
+
+    <insert id="upload">
+        INSERT INTO files (
+                            file_id
+                          , folder_id
+                          , user_code
+                          , origin_name
+                          , stored_name
+                          , extension
+                          , file_size
+                          , storage_path
+                          , last_modified_at
+        ) VALUES (
+                   uuid_in(md5(random()::text || now()::text)::cstring)
+                 , #{folderId}
+                 , #{userCode}
+                 , #{originName}
+                 , #{storedName}
+                 , #{extension}
+                 , #{fileSize}
+                 , #{storagePath}
+                 , #{lastModifiedAt}
+                 )
+    </insert>
+
+</mapper>

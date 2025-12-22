@@ -1,4 +1,4 @@
-package org.nas.api.model.v1.file;
+package org.nas.api.model.v1.upload;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

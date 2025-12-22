@@ -6,20 +6,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nas.api.common.model.DefaultUserInfo;
 import org.nas.api.controller.v1.BaseV1Controller;
-import org.nas.api.model.v1.file.TempUploadFile;
-import org.nas.api.model.v1.file.request.FileRequest;
+import org.nas.api.model.v1.file.File;
 import org.nas.api.model.v1.file.response.FileResponse;
 import org.nas.api.service.v1.file.FileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-@Tag(name = "2.File", description = "File")
+@Tag(name = "3.File", description = "File")
 @RestController
 @RequestMapping("/file")
 @RequiredArgsConstructor
@@ -27,23 +24,13 @@ public class FileController extends BaseV1Controller {
 
     private final FileService fileService;
 
-    @PostMapping("/upload")
-    public ResponseEntity<FileResponse> upload(
-            @Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo
-            , @RequestPart(value = "files", required = false) List<MultipartFile> files
-            , @RequestPart(value = "fileRequest", required = false) FileRequest fileRequest) throws IOException {
-
-        if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("업로드할 파일이 없습니다.");
-        }
-
+    @PostMapping("/list")
+    public ResponseEntity<FileResponse> selectFileList(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo) {
         try {
-            // 임시파일 생성
-            List<TempUploadFile> tempUploadFileList = fileService.createFile(files);
 
-            fileService.uploadAsync(userInfo.getUserCode(), fileRequest.getFolderId(), tempUploadFileList);
-
-            return ResponseEntity.ok(FileResponse.getSuccess());
+            List<File> fileList = fileService.selectFileList(userInfo.getUserCode());
+            log.info("fileList => {}", fileList.toString());
+            return ResponseEntity.ok(FileResponse.getSuccess(fileList));
         } catch (Exception e) {
             return ResponseEntity.ok(FileResponse.getError());
         }

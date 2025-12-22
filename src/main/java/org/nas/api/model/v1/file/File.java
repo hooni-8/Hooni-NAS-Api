@@ -13,22 +13,23 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FileUploadJob {
-    private String jobId;
+public class File {
 
-    private String userCode;
+    private String fileId;
 
     private String folderId;
 
-    private int totalCount;
+    private String userCode;
 
-    private int doneCount;
+    private String originName;
 
-    private int failCount;
+    private String storedName;
 
-    private String status;
+    private String extension;
 
-    private Date createdAt;
+    private long fileSize;
 
-    private Date updatedAt;
+    private String storagePath;
+
+    private String lastModifiedAt;
 }

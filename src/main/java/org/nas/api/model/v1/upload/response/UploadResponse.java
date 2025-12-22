@@ -1,4 +1,4 @@
-package org.nas.api.model.v1.file.response;
+package org.nas.api.model.v1.upload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -6,33 +6,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nas.api.common.code.StatusCode;
-import org.nas.api.model.v1.file.File;
-
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FileResponse {
+public class UploadResponse {
 
     private String code;
 
     private String message;
 
-    private List<File> data;
-
-    public static FileResponse getSuccess(List<File> fileList) {
-        return FileResponse.builder()
+    public static UploadResponse getSuccess() {
+        return UploadResponse.builder()
                 .code(StatusCode.SUCCESS.getCode())
                 .message(StatusCode.SUCCESS.getMessage())
-                .data(fileList)
                 .build();
     }
 
-    public static FileResponse getError() {
-        return FileResponse.builder()
+    public static UploadResponse getError() {
+        return UploadResponse.builder()
                 .code(StatusCode.ERROR.getCode())
                 .message(StatusCode.ERROR.getMessage())
                 .build();

@@ -6,14 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class FileRequest {
-
-    private String jobId;
-
-    private String folderId;
-}
+//@Data
+//@Builder
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@JsonInclude(JsonInclude.Include.NON_NULL)
+//public class FileRequest {
+//
+//
+//}
