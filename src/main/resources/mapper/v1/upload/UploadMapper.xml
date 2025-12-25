@@ -5,26 +5,40 @@
 
     <insert id="upload">
         INSERT INTO files (
-                            file_id
-                          , folder_id
-                          , user_code
-                          , origin_name
-                          , stored_name
-                          , extension
-                          , file_size
-                          , storage_path
-                          , last_modified_at
+            file_id
+            , folder_id
+            , user_code
+            , origin_name
+            , stored_name
+            , extension
+            , file_size
+            , storage_path
+            , last_modified_at
         ) VALUES (
-                   uuid_in(md5(random()::text || now()::text)::cstring)
-                 , #{folderId}
-                 , #{userCode}
-                 , #{originName}
-                 , #{storedName}
-                 , #{extension}
-                 , #{fileSize}
-                 , #{storagePath}
-                 , #{lastModifiedAt}
-                 )
+            #{fileId}
+            , #{folderId}
+            , #{userCode}
+            , #{originName}
+            , #{storedName}
+            , #{extension}
+            , #{fileSize}
+            , #{storagePath}
+            , #{lastModifiedAt}
+        )
+    </insert>
+
+    <insert id="createPreview">
+        INSERT INTO file_previews (
+            preview_id
+            , file_id
+            , stored_name
+            , storage_path
+        ) VALUES (
+            uuid_in(md5(random()::text || now()::text)::cstring)
+            , #{fileId}
+            , #{storedName}
+            , #{storagePath}
+        )
     </insert>
 
 </mapper>

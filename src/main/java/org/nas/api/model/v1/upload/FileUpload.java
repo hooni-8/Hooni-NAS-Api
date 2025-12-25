@@ -15,6 +15,8 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FileUpload {
 
+    private String fileId;
+
     private String folderId;
 
     private String userCode;

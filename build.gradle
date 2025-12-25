@@ -51,6 +51,8 @@ dependencies {
 
     // mybatis
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    
+    implementation 'net.coobird:thumbnailator:0.4.20'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

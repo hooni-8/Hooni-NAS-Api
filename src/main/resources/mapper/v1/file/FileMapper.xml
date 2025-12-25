@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.nas.api.mapper.v1.file.FileMapper">
 
-    <select id="selectFileList" resultType="org.nas.api.model.v1.file.File">
+    <select id="getFileList" resultType="org.nas.api.model.v1.file.File">
         select
             file_id
              , origin_name
@@ -14,6 +14,19 @@
         where delete_yn = 'N'
           and user_code = #{userCode}
           and folder_id = '860ce165-cddc-0d62-406b-023d02dbd04c'
+        order by uploaded_at desc
+    </select>
+
+    <select id="getPreview" resultType="org.nas.api.model.v1.file.FilePreview">
+        select
+            fp.storage_path
+            , fp.stored_name
+        from files f
+        left join file_previews fp on f.file_id = fp.file_id
+        where f.delete_yn = 'N'
+          and f.user_code = #{userCode}
+          and f.folder_id = '860ce165-cddc-0d62-406b-023d02dbd04c'
+          and f.file_id = #{fileId}
     </select>
 
 </mapper>

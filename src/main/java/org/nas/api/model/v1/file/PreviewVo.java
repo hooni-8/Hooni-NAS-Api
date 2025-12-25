@@ -5,30 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class File {
+public class PreviewVo {
 
-    private String fileId;
+    private Resource resource;
 
-    private String folderId;
+    private String contentType;
 
-    private String userCode;
-
-    private String originName;
-
-    private String storedName;
-
-    private String extension;
-
-    private long fileSize;
-
-    private String storagePath;
-
-    private String lastModifiedAt;
+    private MediaType mediaType;
 }
