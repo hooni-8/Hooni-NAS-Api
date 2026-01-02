@@ -4,17 +4,41 @@
 <mapper namespace="org.nas.api.mapper.v1.file.FileMapper">
 
     <select id="getFileList" resultType="org.nas.api.model.v1.file.File">
-        select
-            file_id
-             , origin_name
-             , file_size
-             , TO_CHAR(last_modified_at, 'YYYY-MM-DD HH24:MI') as last_modified_at
+        select item_id
+             , item_name
+             , item_size
+             , parent_id
+             , item_type
              , extension
-        from files
-        where delete_yn = 'N'
-          and user_code = #{userCode}
-          and folder_id = '860ce165-cddc-0d62-406b-023d02dbd04c'
-        order by uploaded_at desc
+             , last_modified_at
+        from (
+            select folder_id                                        as item_id
+                 , folder_name                                      as item_name
+                 , 0                                                as item_size
+                 , parent_folder_id                                 as parent_id
+                 , 'folder'                                         as item_type
+                 , null                                             as extension
+                 , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI')        as last_modified_at
+                 , null				                                as uploaded_at
+            from folders
+            where folder_id <![CDATA[ <> ]]> parent_folder_id
+            and parent_folder_id = #{activeFolderId}
+            and user_code = #{userCode}
+            union all
+            select file_id                                          as item_id
+                 , origin_name                                      as item_name
+                 , file_size                                        as item_size
+                 , folder_id                                        as parent_id
+                 , 'file'                                           as item_type
+                 , extension                                        as extension
+                 , TO_CHAR(uploaded_at, 'YYYY-MM-DD HH24:MI')  as last_modified_at
+                 , uploaded_at		                                as uploaded_at
+            from files
+            where delete_yn = 'N'
+            and folder_id = #{activeFolderId}
+            and user_code = #{userCode}
+        ) t
+        order by item_type desc, uploaded_at desc
     </select>
 
     <select id="getPreview" resultType="org.nas.api.model.v1.file.FilePreview">

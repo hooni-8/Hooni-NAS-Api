@@ -1,4 +1,4 @@
-package org.nas.api.model.v1.file;
+package org.nas.api.model.v1.folder;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -11,11 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FileView {
+public class Folder {
 
-    private String userCode;
+    private String folderId;
 
-    private String fileId;
-
-    private String activeFolderId;
+    private String parentFolderId;
 }

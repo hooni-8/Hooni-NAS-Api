@@ -9,10 +9,7 @@ import org.nas.api.model.v1.file.FileView;
 import org.nas.api.model.v1.file.PreviewVo;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -37,10 +33,11 @@ public class FileService {
 
     private final FileMapper fileMapper;
 
-    public List<File> getFileList(String userCode) {
+    public List<File> getFileList(String userCode, String activeFolderId) {
 
         FileView fileView = FileView.builder()
                 .userCode(userCode)
+                .activeFolderId(activeFolderId)
                 .build();
 
         return fileMapper.getFileList(fileView);

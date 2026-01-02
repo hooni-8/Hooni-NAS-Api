@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nas.api.mapper.v1.folder.FolderMapper">
+
+    <select id="rootFolder" resultType="org.nas.api.model.v1.folder.Folder">
+        select folder_id
+        from folders
+        where folder_id = parent_folder_id
+        and user_code = #{userCode}
+    </select>
+
+    <select id="activeFolder" resultType="org.nas.api.model.v1.folder.Folder">
+        select folder_id
+             , parent_folder_id
+             , folder_name
+        from folders
+        where folder_id <![CDATA[ <> ]]> parent_folder_id
+        and user_code = #{userCode}
+        and parent_folder_id = #{activeFolderId}
+    </select>
+
+    <insert id="createFolder">
+        INSERT INTO folders (
+            folder_id
+            , user_code
+            , parent_folder_id
+            , folder_name
+        ) VALUES (
+            uuid_in(md5(random()::text || now()::text)::cstring)
+            , #{userCode}
+            , #{activeFolderId}
+            , #{folderName}
+        )
+    </insert>
+</mapper>

@@ -2,6 +2,7 @@ package org.nas.api.controller.v1.file;
 
 import org.nas.api.model.v1.file.PreviewVo;
 import org.nas.api.model.v1.file.response.PreviewResponse;
+import org.nas.api.model.v1.folder.request.ActiveFolderRequest;
 import org.springframework.core.io.Resource;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,10 +34,10 @@ public class FileController extends BaseV1Controller {
     private final FileService fileService;
 
     @PostMapping("/list")
-    public ResponseEntity<FileResponse> getFileList(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo) {
+    public ResponseEntity<FileResponse> getFileList(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody ActiveFolderRequest request) {
         try {
 
-            List<File> fileList = fileService.getFileList(userInfo.getUserCode());
+            List<File> fileList = fileService.getFileList(userInfo.getUserCode(), request.getActiveFolderId());
 
             return ResponseEntity.ok(FileResponse.getSuccess(fileList));
         } catch (Exception e) {

@@ -14,21 +14,18 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class File {
 
-    private String fileId;
+    private String itemId;
 
-    private String folderId;
+    private String itemName;
 
-    private String userCode;
+    private long itemSize;
 
-    private String originName;
+    private String parentId;
 
-    private String storedName;
+    private String itemType;
 
     private String extension;
 
-    private long fileSize;
-
-    private String storagePath;
-
     private String lastModifiedAt;
+
 }
