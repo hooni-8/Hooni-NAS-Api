@@ -31,7 +31,7 @@
                  , folder_id                                        as parent_id
                  , 'file'                                           as item_type
                  , extension                                        as extension
-                 , TO_CHAR(uploaded_at, 'YYYY-MM-DD HH24:MI')  as last_modified_at
+                 , TO_CHAR(uploaded_at, 'YYYY-MM-DD HH24:MI')       as last_modified_at
                  , uploaded_at		                                as uploaded_at
             from files
             where delete_yn = 'N'
@@ -41,7 +41,7 @@
         order by item_type desc, uploaded_at desc
     </select>
 
-    <select id="getPreview" resultType="org.nas.api.model.v1.file.FilePreview">
+    <select id="getThumbnail" resultType="org.nas.api.model.v1.file.FilePreview">
         select
             fp.storage_path
             , fp.stored_name
@@ -49,7 +49,17 @@
         left join file_previews fp on f.file_id = fp.file_id
         where f.delete_yn = 'N'
           and f.user_code = #{userCode}
-          and f.folder_id = '860ce165-cddc-0d62-406b-023d02dbd04c'
+          and f.folder_id = #{activeFolderId}
+          and f.file_id = #{fileId}
+    </select>
+
+    <select id="getPreview" resultType="org.nas.api.model.v1.file.FilePreview">
+        select f.storage_path
+             , f.stored_name
+        from files f
+        where f.delete_yn = 'N'
+          and f.user_code = #{userCode}
+          and f.folder_id = #{activeFolderId}
           and f.file_id = #{fileId}
     </select>
 

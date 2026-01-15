@@ -12,5 +12,7 @@ public interface FileMapper {
 
     List<File> getFileList(FileView fileView);
 
+    FilePreview getThumbnail(FileView fileView);
+
     FilePreview getPreview(FileView fileView);
 }

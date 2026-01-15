@@ -46,11 +46,30 @@ public class FileController extends BaseV1Controller {
     }
 
     @GetMapping("/thumbnail/{fileId}")
-    public ResponseEntity<Resource> getPreview(
-            @Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo,
-            @PathVariable("fileId") String fileId) throws IOException {
+    public ResponseEntity<Resource> getThumbnail(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, ActiveFolderRequest request) throws IOException {
         try {
-            PreviewVo vo = fileService.getThumbnail(userInfo.getUserCode(), fileId);
+
+            PreviewVo vo = fileService.getThumbnail(userInfo.getUserCode(), fileId, request.getActiveFolderId());
+
+            if (vo == null || vo.getResource() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                    .contentType(vo.getMediaType())
+                    .body(vo.getResource());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/preview/{fileId}")
+    public ResponseEntity<Resource> getPreview(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, ActiveFolderRequest request) throws IOException {
+        try {
+
+            PreviewVo vo = fileService.getPreview(userInfo.getUserCode(), fileId, request.getActiveFolderId());
 
             if (vo == null || vo.getResource() == null) {
                 return ResponseEntity.notFound().build();
