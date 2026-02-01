@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nas.api.common.code.StatusCode;
-import org.nas.api.model.v1.file.PreviewVo;
+import org.nas.api.model.v1.file.FilePreviewResult;
 
 @Data
 @Builder
@@ -18,9 +18,9 @@ public class PreviewResponse {
 
     private String message;
 
-    private PreviewVo data;
+    private FilePreviewResult data;
 
-    public static PreviewResponse getSuccess(PreviewVo data) {
+    public static PreviewResponse getSuccess(FilePreviewResult data) {
         return PreviewResponse.builder()
                 .code(StatusCode.SUCCESS.getCode())
                 .message(StatusCode.SUCCESS.getMessage())

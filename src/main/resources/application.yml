@@ -71,3 +71,13 @@ springdoc:
 jasypt:
   encryptor:
     password: ${ENCRYPTOR_PROFILE}
+
+###########################################################################
+### File Path 설정
+###########################################################################
+file:
+  path:
+    base-path: /attachfile
+    base-path-dev: C:/dev/attachfile
+    temp-base-path: /data/upload-temp
+    thumbnail-base-path: upload-thumbnail

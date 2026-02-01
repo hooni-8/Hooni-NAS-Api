@@ -17,4 +17,6 @@ public class FilePreview {
 
     private String storagePath;
 
+    private String extension;
+
 }

@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PreviewVo {
+public class FilePreviewResult {
 
     private Resource resource;
 
