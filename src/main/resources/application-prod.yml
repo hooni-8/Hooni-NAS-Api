@@ -78,7 +78,6 @@ jasypt:
 file:
   path:
     base-path: /attachfile
-    base-path-dev: C:/dev/attachfile
     temp-base-path: /data/upload-temp
     thumbnail-base-path: upload-thumbnail
     ffmpeg-path: /usr/bin/ffmpeg

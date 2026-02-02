@@ -77,8 +77,7 @@ jasypt:
 ###########################################################################
 file:
   path:
-    base-path: /attachfile
-    base-path-dev: C:/dev/attachfile
+    base-path: C:/dev/attachfile
     temp-base-path: /data/upload-temp
     thumbnail-base-path: upload-thumbnail
     ffmpeg-path: C:\Users\Lee_SH\Desktop\Dev\ffmpeg-2026-01-29-git-c898ddb8fe-full_build\bin\ffmpeg

@@ -29,29 +29,9 @@ public class FileContentService {
 
     private final FileMapper fileMapper;
 
-    private Path osPath(String path1, String path2) {
-
-        Path path;
-        String os = System.getProperty("os.name").toLowerCase();
-
-        if (os.contains("windows")) {
-            path = Paths.get(filePathProperties.getBasePathDev(), path1, path2);
-        } else {
-            path = Paths.get(filePathProperties.getBasePath(), path1, path2);
-        }
-
-        return path;
-    }
-
     // 썸네일 조회
     public FilePreviewResult thumbnailFile(String userCode, String fileId, String activeFolderId) throws IOException {
-        FilePreviewResult result = loadPreview(userCode, fileId, activeFolderId, fileMapper::getThumbnail);
-
-        if (result == null) {
-            log.info("!!!!!!!!!!!!!!!!!!!!!");
-        }
-
-        return result;
+        return loadPreview(userCode, fileId, activeFolderId, fileMapper::getThumbnail);
     }
 
     // 미리보기 조회
@@ -73,7 +53,7 @@ public class FileContentService {
             return null;
         }
 
-        Path path = osPath(filePreview.getStoragePath(), filePreview.getStoredName());
+        Path path = Paths.get(filePathProperties.getBasePath(), filePreview.getStoragePath(), filePreview.getStoredName());
         if (!Files.exists(path)) {
             return null;
         }

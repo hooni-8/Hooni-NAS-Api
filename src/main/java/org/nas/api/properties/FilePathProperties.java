@@ -9,8 +9,6 @@ public class FilePathProperties {
 
     private String basePath;
 
-    private String basePathDev;
-
     private String tempBasePath;
 
     private String thumbnailBasePath;

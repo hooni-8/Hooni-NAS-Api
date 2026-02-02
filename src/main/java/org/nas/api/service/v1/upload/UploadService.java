@@ -33,26 +33,12 @@ public class UploadService {
 
     private final FilePathProperties filePathProperties;
 
-    private Path osPath(String path1) {
-
-        Path path;
-        String os = System.getProperty("os.name").toLowerCase();
-
-        if (os.contains("windows")) {
-            path = Paths.get(filePathProperties.getBasePathDev(), path1);
-        } else {
-            path = Paths.get(filePathProperties.getBasePath(), path1);
-        }
-
-        return path;
-    }
-
     // File 생성
     // 비동기 처리를 위해 파일을 임시 저장
     public TempUploadFile createFile(MultipartFile file) throws IOException {
         log.info("========= FILE Create Start =========");
 
-        Path tempDir = osPath(filePathProperties.getTempBasePath());
+        Path tempDir = Paths.get(filePathProperties.getBasePath(), filePathProperties.getTempBasePath());
 
         Files.createDirectories(tempDir);
 
@@ -89,7 +75,7 @@ public class UploadService {
                     today.getDayOfMonth()
             );
 
-            Path dirPath = osPath(relativePath);
+            Path dirPath = Paths.get(filePathProperties.getBasePath(), relativePath);
 
             Files.createDirectories(dirPath);
 
@@ -119,7 +105,7 @@ public class UploadService {
 
             if (FileUtils.isImage(extension) || FileUtils.isVideo(extension)) {
 
-                createThumbnail(dirPath, storedName, extension, fileId, relativePath);
+                createThumbnail(dirPath, storedName, extension, fileId, relativePath, true);
 
             }
 
@@ -128,7 +114,7 @@ public class UploadService {
         }
     }
 
-    public void createThumbnail(Path dirPath, String storedName, String extension, String fileId, String relativePath) throws IOException {
+    public void createThumbnail(Path dirPath, String storedName, String extension, String fileId, String relativePath, boolean isSave) throws IOException {
 
         boolean isImage = FileUtils.isImage(extension);
         boolean isVideo = FileUtils.isVideo(extension);
@@ -155,13 +141,15 @@ public class UploadService {
             createImageThumbnail(originalPath, thumbnailPath, isPng);
         }
 
-        PreviewUpload filePreview = PreviewUpload.builder()
-                .fileId(fileId)
-                .storedName(thumbnailName)
-                .storagePath(Paths.get(relativePath, filePathProperties.getThumbnailBasePath()).toString())
-                .build();
+        if (isSave) {
+            PreviewUpload filePreview = PreviewUpload.builder()
+                    .fileId(fileId)
+                    .storedName(thumbnailName)
+                    .storagePath(Paths.get(relativePath, filePathProperties.getThumbnailBasePath()).toString())
+                    .build();
 
-        uploadMapper.createPreview(filePreview);
+            uploadMapper.createPreview(filePreview);
+        }
     }
 
     // 이미지 썸네일 생성
@@ -194,9 +182,7 @@ public class UploadService {
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
-            // 🔥 로그 스트림 소비
-            try (BufferedReader reader =
-                         new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
