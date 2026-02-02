@@ -182,7 +182,7 @@ public class UploadService {
     private void createVideoThumbnail(Path original, Path thumbnailPath) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "/usr/bin/ffmpeg",
+                    filePathProperties.getFfmpegPath(),
                     "-y",
                     "-ss", "00:00:01",
                     "-i", original.toAbsolutePath().toString(),

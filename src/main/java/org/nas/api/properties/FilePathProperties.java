@@ -14,4 +14,6 @@ public class FilePathProperties {
     private String tempBasePath;
 
     private String thumbnailBasePath;
+
+    private String ffmpegPath;
 }
