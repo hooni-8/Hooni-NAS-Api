@@ -1,6 +1,7 @@
 package org.nas.api.mapper.v1.file;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.nas.api.model.v1.file.DeleteFileVo;
 import org.nas.api.model.v1.file.File;
 import org.nas.api.model.v1.file.FilePreview;
 import org.nas.api.model.v1.file.FileView;
@@ -15,4 +16,6 @@ public interface FileMapper {
     FilePreview getThumbnail(FileView fileView);
 
     FilePreview getPreview(FileView fileView);
+
+    int deleteFile(DeleteFileVo deleteFileVo);
 }

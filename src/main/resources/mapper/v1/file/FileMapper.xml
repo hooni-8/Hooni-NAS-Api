@@ -64,4 +64,13 @@
           and f.file_id = #{fileId}
     </select>
 
+    <update id="deleteFile" parameterType="org.nas.api.model.v1.file.DeleteFileVo">
+        update files
+           set delete_yn = 'Y'
+             , deleted_at = now()
+         where file_id = #{fileId}
+           and folder_id = #{activeFolderId}
+           and user_code = #{userCode}
+    </update>
+
 </mapper>

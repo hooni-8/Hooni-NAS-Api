@@ -31,15 +31,8 @@ public class FolderController extends BaseV1Controller {
     private final FolderService folderService;
 
     @PostMapping("/root")
-    public ResponseEntity<FolderResponse> rootFolder(@AuthenticationPrincipal DefaultUserInfo userInfo) {
-        try {
-            Folder folder = folderService.rootFolder(userInfo.getUserCode());
-
-            return ResponseEntity.ok(FolderResponse.getSuccess(folder));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.ok(FolderResponse.getError());
-        }
+    public Folder rootFolder(@AuthenticationPrincipal DefaultUserInfo userInfo) {
+        return folderService.rootFolder(userInfo.getUserCode());
     }
 
     @PostMapping("/active")
