@@ -15,6 +15,6 @@ public class CreateFolderRequest {
 
     private String folderName;
 
-    private String activeFolderId;
+    private String folderId;
 
 }

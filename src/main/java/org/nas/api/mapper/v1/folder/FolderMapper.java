@@ -10,7 +10,5 @@ public interface FolderMapper {
 
     Folder rootFolder(String userCode);
 
-    List<Folder> activeFolder(String userCode, String activeFolderId);
-
-    int createFolder(String userCode, String folderName, String activeFolderId);
+    int createFolder(String userCode, String folderName, String folderId);
 }

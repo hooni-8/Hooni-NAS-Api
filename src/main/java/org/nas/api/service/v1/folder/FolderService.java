@@ -19,11 +19,7 @@ public class FolderService {
         return folderMapper.rootFolder(userCode);
     }
 
-    public List<Folder> activeFolder(String userCode, String activeFolderCode) {
-        return folderMapper.activeFolder(userCode, activeFolderCode);
-    }
-
-    public int createFolder(String userCode, String folderName, String activeFolderId) {
-        return folderMapper.createFolder(userCode, folderName, activeFolderId);
+    public int createFolder(String userCode, String folderName, String folderId) {
+        return folderMapper.createFolder(userCode, folderName, folderId);
     }
 }

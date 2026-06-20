@@ -16,4 +16,6 @@ public class Folder {
     private String folderId;
 
     private String parentFolderId;
+
+    private String folderName;
 }

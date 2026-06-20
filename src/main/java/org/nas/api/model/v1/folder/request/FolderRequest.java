@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ActiveFolderRequest {
+public class FolderRequest {
 
-    private String activeFolderId;
+    private String folderId;
 
 }

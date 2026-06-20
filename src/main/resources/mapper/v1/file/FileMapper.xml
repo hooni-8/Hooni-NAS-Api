@@ -3,74 +3,83 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.nas.api.mapper.v1.file.FileMapper">
 
-    <select id="getFileList" resultType="org.nas.api.model.v1.file.File">
-        select item_id
-             , item_name
-             , item_size
-             , parent_id
-             , item_type
-             , extension
-             , last_modified_at
-        from (
-            select folder_id                                        as item_id
-                 , folder_name                                      as item_name
-                 , 0                                                as item_size
-                 , parent_folder_id                                 as parent_id
-                 , 'folder'                                         as item_type
-                 , null                                             as extension
-                 , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI')        as last_modified_at
-                 , null				                                as uploaded_at
-            from folders
-            where folder_id <![CDATA[ <> ]]> parent_folder_id
-            and parent_folder_id = #{activeFolderId}
-            and user_code = #{userCode}
-            union all
-            select file_id                                          as item_id
-                 , origin_name                                      as item_name
-                 , file_size                                        as item_size
-                 , folder_id                                        as parent_id
-                 , 'file'                                           as item_type
-                 , extension                                        as extension
-                 , TO_CHAR(uploaded_at, 'YYYY-MM-DD HH24:MI')       as last_modified_at
-                 , uploaded_at		                                as uploaded_at
-            from files
-            where delete_yn = 'N'
-            and folder_id = #{activeFolderId}
-            and user_code = #{userCode}
-        ) t
-        order by item_type desc, uploaded_at desc
+    <select id="selectFolderInfo" resultType="org.nas.api.model.v1.folder.Folder">
+        SELECT FOLDER_ID
+             , PARENT_FOLDER_ID
+             , FOLDER_NAME
+          FROM NAS_FOLDER
+         WHERE FOLDER_ID = #{folderId}
+           AND USER_CODE = #{userCode}
+    </select>
+
+    <select id="selectFileList" resultType="org.nas.api.model.v1.file.File">
+        SELECT ITEM_ID
+             , ITEM_NAME
+             , ITEM_SIZE
+             , PARENT_ID
+             , ITEM_TYPE
+             , EXTENSION
+             , LAST_MODIFIED_AT
+          FROM (
+            SELECT FOLDER_ID                                        AS ITEM_ID
+                 , FOLDER_NAME                                      AS ITEM_NAME
+                 , 0                                                AS ITEM_SIZE
+                 , PARENT_FOLDER_ID                                 AS PARENT_ID
+                 , 'FOLDER'                                         AS ITEM_TYPE
+                 , NULL                                             AS EXTENSION
+                 , TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI')        AS LAST_MODIFIED_AT
+                 , NULL				                                AS UPLOADED_AT
+              FROM NAS_FOLDER
+             WHERE FOLDER_ID <![CDATA[ <> ]]> PARENT_FOLDER_ID
+               AND PARENT_FOLDER_ID = #{folderId}
+               AND USER_CODE = #{userCode}
+             UNION ALL
+            SELECT FILE_ID                                          AS ITEM_ID
+                 , ORIGIN_NAME                                      AS ITEM_NAME
+                 , FILE_SIZE                                        AS ITEM_SIZE
+                 , FOLDER_ID                                        AS PARENT_ID
+                 , 'FILE'                                           AS ITEM_TYPE
+                 , EXTENSION                                        AS EXTENSION
+                 , TO_CHAR(UPLOADED_AT, 'YYYY-MM-DD HH24:MI')       AS LAST_MODIFIED_AT
+                 , UPLOADED_AT		                                AS UPLOADED_AT
+              FROM NAS_FILE
+             WHERE DELETE_YN = 'N'
+               AND FOLDER_ID = #{folderId}
+               AND USER_CODE = #{userCode}
+        ) T
+        ORDER BY ITEM_TYPE DESC, UPLOADED_AT DESC
     </select>
 
     <select id="getThumbnail" resultType="org.nas.api.model.v1.file.FilePreview">
-        select
-            fp.storage_path
-            , fp.stored_name
-        from files f
-        left join file_previews fp on f.file_id = fp.file_id
-        where f.delete_yn = 'N'
-          and f.user_code = #{userCode}
-          and f.folder_id = #{activeFolderId}
-          and f.file_id = #{fileId}
+        SELECT FP.STORAGE_PATH
+             , FP.STORED_NAME
+          FROM NAS_FILE F
+          LEFT JOIN NAS_FILE_PREVIEW FP
+            ON F.FILE_ID = FP.FILE_ID
+         WHERE F.DELETE_YN = 'N'
+           AND F.USER_CODE = #{userCode}
+           AND F.FOLDER_ID = #{folderId}
+           AND F.FILE_ID = #{fileId}
     </select>
 
     <select id="getPreview" resultType="org.nas.api.model.v1.file.FilePreview">
-        select f.storage_path
-             , f.stored_name
-             , f.extension
-        from files f
-        where f.delete_yn = 'N'
-          and f.user_code = #{userCode}
-          and f.folder_id = #{activeFolderId}
-          and f.file_id = #{fileId}
+        SELECT F.STORAGE_PATH
+             , F.STORED_NAME
+             , F.EXTENSION
+          FROM NAS_FILE F
+         WHERE F.DELETE_YN = 'N'
+           AND F.USER_CODE = #{userCode}
+           AND F.FOLDER_ID = #{folderId}
+           AND F.FILE_ID = #{fileId}
     </select>
 
     <update id="deleteFile" parameterType="org.nas.api.model.v1.file.DeleteFileVo">
-        update files
-           set delete_yn = 'Y'
-             , deleted_at = now()
-         where file_id = #{fileId}
-           and folder_id = #{activeFolderId}
-           and user_code = #{userCode}
+        UPDATE NAS_FILE
+           SET DELETE_YN = 'Y'
+             , DELETED_AT = NOW()
+         WHERE FILE_ID = #{fileId}
+           AND FOLDER_ID = #{folderId}
+           AND USER_CODE = #{userCode}
     </update>
 
 </mapper>

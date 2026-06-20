@@ -5,13 +5,16 @@ import org.nas.api.model.v1.file.DeleteFileVo;
 import org.nas.api.model.v1.file.File;
 import org.nas.api.model.v1.file.FilePreview;
 import org.nas.api.model.v1.file.FileView;
+import org.nas.api.model.v1.folder.Folder;
 
 import java.util.List;
 
 @Mapper
 public interface FileMapper {
 
-    List<File> getFileList(FileView fileView);
+    Folder selectFolderInfo(FileView fileView);
+
+    List<File> selectFileList(FileView fileView);
 
     FilePreview getThumbnail(FileView fileView);
 

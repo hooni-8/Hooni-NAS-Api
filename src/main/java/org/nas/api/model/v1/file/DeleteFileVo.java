@@ -17,5 +17,5 @@ public class DeleteFileVo {
 
     private String fileId;
 
-    private String activeFolderId;
+    private String folderId;
 }

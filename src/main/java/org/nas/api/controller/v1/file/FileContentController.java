@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.nas.api.common.model.DefaultUserInfo;
 import org.nas.api.controller.v1.BaseV1Controller;
 import org.nas.api.model.v1.file.FilePreviewResult;
-import org.nas.api.model.v1.folder.request.ActiveFolderRequest;
+import org.nas.api.model.v1.folder.request.FolderRequest;
 import org.nas.api.service.v1.file.FileContentService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
@@ -32,10 +32,10 @@ public class FileContentController extends BaseV1Controller {
     private final FileContentService fileContentService;
 
     @GetMapping("/thumbnail/{fileId}")
-    public ResponseEntity<Resource> getThumbnail(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, ActiveFolderRequest request) throws IOException {
+    public ResponseEntity<Resource> getThumbnail(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, FolderRequest request) throws IOException {
         try {
 
-            FilePreviewResult result = fileContentService.thumbnailFile(userInfo.getUserCode(), fileId, request.getActiveFolderId());
+            FilePreviewResult result = fileContentService.thumbnailFile(userInfo.getUserCode(), fileId, request.getFolderId());
 
             if (result == null) {
                 return ResponseEntity.notFound().build();
@@ -52,10 +52,10 @@ public class FileContentController extends BaseV1Controller {
     }
 
     @GetMapping("/preview/{fileId}")
-    public ResponseEntity<Resource> previewFile(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, ActiveFolderRequest request) throws IOException {
+    public ResponseEntity<Resource> previewFile(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @PathVariable("fileId") String fileId, FolderRequest request) throws IOException {
         try {
 
-            FilePreviewResult result = fileContentService.previewFile(userInfo.getUserCode(), fileId, request.getActiveFolderId());
+            FilePreviewResult result = fileContentService.previewFile(userInfo.getUserCode(), fileId, request.getFolderId());
 
             if (result == null) {
                 return ResponseEntity.notFound().build();

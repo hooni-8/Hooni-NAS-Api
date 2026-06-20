@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DeleteFileInVo {
 
-    private String activeFolderId;
+    private String folderId;
 
     private String fileId;
 }

@@ -30,22 +30,22 @@ public class FileContentService {
     private final FileMapper fileMapper;
 
     // 썸네일 조회
-    public FilePreviewResult thumbnailFile(String userCode, String fileId, String activeFolderId) throws IOException {
-        return loadPreview(userCode, fileId, activeFolderId, fileMapper::getThumbnail);
+    public FilePreviewResult thumbnailFile(String userCode, String fileId, String folderId) throws IOException {
+        return loadPreview(userCode, fileId, folderId, fileMapper::getThumbnail);
     }
 
     // 미리보기 조회
-    public FilePreviewResult previewFile(String userCode, String fileId, String activeFolderId) throws IOException {
-        return loadPreview(userCode, fileId, activeFolderId, fileMapper::getPreview);
+    public FilePreviewResult previewFile(String userCode, String fileId, String folderId) throws IOException {
+        return loadPreview(userCode, fileId, folderId, fileMapper::getPreview);
     }
 
     // 파일 조회 공통
-    private FilePreviewResult loadPreview(String userCode, String fileId, String activeFolderId, Function<FileView, FilePreview> loader) throws IOException {
+    private FilePreviewResult loadPreview(String userCode, String fileId, String folderId, Function<FileView, FilePreview> loader) throws IOException {
 
         FileView fileView = FileView.builder()
                 .userCode(userCode)
                 .fileId(fileId)
-                .activeFolderId(activeFolderId)
+                .folderId(folderId)
                 .build();
 
         FilePreview filePreview = loader.apply(fileView);

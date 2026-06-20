@@ -1,8 +1,8 @@
 package org.nas.api.controller.v1.file;
 
-import org.nas.api.model.v1.code.response.CodeResult;
+import org.nas.api.model.v1.file.FileResult;
 import org.nas.api.model.v1.file.request.DeleteFileInVo;
-import org.nas.api.model.v1.folder.request.ActiveFolderRequest;
+import org.nas.api.model.v1.folder.request.FolderRequest;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +26,13 @@ public class FileController extends BaseV1Controller {
     private final FileService fileService;
 
     @PostMapping("/list")
-    public List<File> getFileList(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody ActiveFolderRequest request) {
-        return fileService.getFileList(userInfo.getUserCode(), request.getActiveFolderId());
+    public FileResult selectFileList(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody FolderRequest request) {
+        return fileService.selectFileList(userInfo.getUserCode(), request.getFolderId());
     }
 
     @PostMapping("/delete")
     public int deleteFile(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody DeleteFileInVo request) {
-        return fileService.deleteFile(userInfo.getUserCode(), request.getActiveFolderId(), request.getFileId());
+        return fileService.deleteFile(userInfo.getUserCode(), request.getFolderId(), request.getFileId());
     }
 
 }

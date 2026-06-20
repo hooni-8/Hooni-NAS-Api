@@ -4,32 +4,22 @@
 <mapper namespace="org.nas.api.mapper.v1.folder.FolderMapper">
 
     <select id="rootFolder" resultType="org.nas.api.model.v1.folder.Folder">
-        select folder_id
-        from folders
-        where folder_id = parent_folder_id
-        and user_code = #{userCode}
-    </select>
-
-    <select id="activeFolder" resultType="org.nas.api.model.v1.folder.Folder">
-        select folder_id
-             , parent_folder_id
-             , folder_name
-        from folders
-        where folder_id <![CDATA[ <> ]]> parent_folder_id
-        and user_code = #{userCode}
-        and parent_folder_id = #{activeFolderId}
+        SELECT FOLDER_ID
+          FROM NAS_FOLDER
+         WHERE FOLDER_ID = PARENT_FOLDER_ID
+           AND USER_CODE = #{userCode}
     </select>
 
     <insert id="createFolder">
-        INSERT INTO folders (
-            folder_id
-            , user_code
-            , parent_folder_id
-            , folder_name
+        INSERT INTO NAS_FOLDER (
+            FOLDER_ID
+            , USER_CODE
+            , PARENT_FOLDER_ID
+            , FOLDER_NAME
         ) VALUES (
             uuid_in(md5(random()::text || now()::text)::cstring)
             , #{userCode}
-            , #{activeFolderId}
+            , #{folderId}
             , #{folderName}
         )
     </insert>

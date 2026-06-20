@@ -8,7 +8,7 @@ import org.nas.api.common.model.DefaultUserInfo;
 import org.nas.api.controller.v1.BaseV1Controller;
 import org.nas.api.model.v1.code.response.CodeResult;
 import org.nas.api.model.v1.folder.Folder;
-import org.nas.api.model.v1.folder.request.ActiveFolderRequest;
+import org.nas.api.model.v1.folder.request.FolderRequest;
 import org.nas.api.model.v1.folder.request.CreateFolderRequest;
 import org.nas.api.model.v1.folder.response.FolderResponse;
 import org.nas.api.service.v1.folder.FolderService;
@@ -35,22 +35,10 @@ public class FolderController extends BaseV1Controller {
         return folderService.rootFolder(userInfo.getUserCode());
     }
 
-    @PostMapping("/active")
-    public ResponseEntity<FolderResponse> activeFolder(@AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody ActiveFolderRequest request) {
-        try {
-            List<Folder> folderList = folderService.activeFolder(userInfo.getUserCode(), request.getActiveFolderId());
-
-            return ResponseEntity.ok(FolderResponse.getListSuccess(folderList));
-        } catch (Exception e) {
-          log.error(e.getMessage());
-            return ResponseEntity.ok(FolderResponse.getError());
-        }
-    }
-
     @PostMapping("/create")
     public ResponseEntity<CodeResult> createFolder(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody CreateFolderRequest request) {
         try {
-            int result = folderService.createFolder(userInfo.getUserCode(), request.getFolderName(), request.getActiveFolderId());
+            int result = folderService.createFolder(userInfo.getUserCode(), request.getFolderName(), request.getFolderId());
 
             if (result > 0) {
                 return ResponseEntity.ok(CodeResult.getSuccess());
