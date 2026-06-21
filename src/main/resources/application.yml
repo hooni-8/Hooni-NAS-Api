@@ -14,7 +14,8 @@ spring:
     name: nas-api
 
   datasource:
-    url: ENC(fxwK2fXAyRsYuLbBAozqJR3qWH8CGznquFQVjRtTPeDAETOn4nHanMhdi6DLcrX8K0PHcr4IXoe1xAlg9p1Z0h24dch4iaBmtcKO+/5x094=)
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: ENC(WlSGzzM51GPKsRh0TIqbGpbrw7cdBAKOofaDmapOgxbtTIuWKTtaEvKE2E+3p1dApm/rjKPzOsxkrvbF9AMpQhAUov7+IpdqKfgl5Qb/TuB2KsaoWzBmitvaM34syMUq)
     username: ENC(beDx2gXAeAxV+VZd/SkiqMaczaTm3Rj2l0TpY8ogShokNlnu6tVAdjmdpC7o1aSC)
     password: ENC(4SyrWZHyzfkDQqeynwC4NEiGEME4hSF5EDy6TcXnQ864Fuggclf00RrBFbWYu9m0)
 
@@ -81,3 +82,9 @@ file:
     temp-base-path: /data/upload-temp
     thumbnail-base-path: upload-thumbnail
     ffmpeg-path: C:\Users\Lee_SH\Desktop\Dev\ffmpeg-2026-01-29-git-c898ddb8fe-full_build\bin\ffmpeg
+
+###########################################################################
+### jwt 설정
+###########################################################################
+jwt:
+  secretkey: ENC(fkLWNwMEhnest9nhBCWy4uxCHDBLzKRzyzuLOwTnicJrEpH3ZlRImo2/6ILWwq6lQWS9CQzfutcCWIjJcKaZG/r/qDqY578FMythF1hx5oV9vZCfYmKeppOU49+dOjP5)

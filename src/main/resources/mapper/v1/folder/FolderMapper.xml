@@ -23,4 +23,56 @@
             , #{folderName}
         )
     </insert>
+
+    <select id="deleteFolderList" resultType="org.nas.api.model.v1.folder.Folder">
+        WITH RECURSIVE FOLDER_TREE AS (
+             SELECT FOLDER_ID, PARENT_FOLDER_ID
+               FROM NAS_FOLDER
+              WHERE FOLDER_ID = #{folderId}
+                AND USER_CODE = #{userCode}
+              UNION ALL
+             SELECT F.FOLDER_ID, F.PARENT_FOLDER_ID
+               FROM NAS_FOLDER F
+               JOIN FOLDER_TREE FT
+                 ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+              WHERE USER_CODE = #{userCode}
+        )
+        SELECT FOLDER_ID, PARENT_FOLDER_ID
+          FROM FOLDER_TREE
+    </select>
+
+    <select id="deleteFileList" resultType="org.nas.api.model.v1.file.File">
+        SELECT FILE_ID
+          FROM NAS_FILE
+         WHERE USER_CODE = #{userCode}
+           AND FOLDER_ID = #{folderId}
+    </select>
+
+    <update id="deleteFolder">
+        UPDATE NAS_FOLDER
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE DELETE_YN = 'N'
+          AND USER_CODE = #{userCode}
+          AND PARENT_FOLDER_ID = #{parentFolderId}
+          AND FOLDER_ID = #{folderId}
+    </update>
+
+    <delete id="deleteFile">
+        UPDATE NAS_FILE
+           SET DELETE_YN = 'Y'
+             , DELETED_AT = NOW()
+         WHERE DELETE_YN = 'N'
+           AND USER_CODE = #{userCode}
+           AND FILE_ID = #{fileId}
+           AND FOLDER_ID = #{folderId}
+    </delete>
+
+    <update id="deletePreview">
+        UPDATE NAS_FILE_PREVIEW
+           SET DELETE_YN = 'Y'
+             , DELETED_AT = NOW()
+         WHERE DELETE_YN = 'N'
+           AND FILE_ID = #{fileId}
+    </update>
 </mapper>

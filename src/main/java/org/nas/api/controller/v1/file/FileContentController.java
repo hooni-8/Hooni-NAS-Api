@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.nas.api.FilePreviewProvider.VideoTokenPayload;
+import org.nas.api.FilePreviewProvider.VideoTokenProvider;
 import org.nas.api.common.model.DefaultUserInfo;
 import org.nas.api.controller.v1.BaseV1Controller;
 import org.nas.api.model.v1.file.FilePreviewResult;
@@ -28,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/file")
 @RequiredArgsConstructor
 public class FileContentController extends BaseV1Controller {
+
+    private final VideoTokenProvider videoTokenProvider;
 
     private final FileContentService fileContentService;
 
@@ -56,6 +60,27 @@ public class FileContentController extends BaseV1Controller {
         try {
 
             FilePreviewResult result = fileContentService.previewFile(userInfo.getUserCode(), fileId, request.getFolderId());
+
+            if (result == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                    .contentType(result.getMediaType())
+                    .body(result.getResource());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/video/{fileId}")
+    public ResponseEntity<Resource> previewVideo(@PathVariable("fileId") String fileId, FolderRequest request) throws IOException {
+        try {
+            VideoTokenPayload payload = videoTokenProvider.validate(request.getStToken());
+
+            FilePreviewResult result = fileContentService.previewFile(payload.getUserCode(), fileId, request.getFolderId());
 
             if (result == null) {
                 return ResponseEntity.notFound().build();

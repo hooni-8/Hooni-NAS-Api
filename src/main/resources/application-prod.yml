@@ -81,3 +81,9 @@ file:
     temp-base-path: /data/upload-temp
     thumbnail-base-path: upload-thumbnail
     ffmpeg-path: /usr/bin/ffmpeg
+
+###########################################################################
+### jwt 설정
+###########################################################################
+jwt:
+  secretkey: ENC(fkLWNwMEhnest9nhBCWy4uxCHDBLzKRzyzuLOwTnicJrEpH3ZlRImo2/6ILWwq6lQWS9CQzfutcCWIjJcKaZG/r/qDqY578FMythF1hx5oV9vZCfYmKeppOU49+dOjP5)

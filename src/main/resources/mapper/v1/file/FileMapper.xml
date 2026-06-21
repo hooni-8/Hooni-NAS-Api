@@ -28,9 +28,9 @@
                  , 'FOLDER'                                         AS ITEM_TYPE
                  , NULL                                             AS EXTENSION
                  , TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI')        AS LAST_MODIFIED_AT
-                 , NULL				                                AS UPLOADED_AT
               FROM NAS_FOLDER
-             WHERE FOLDER_ID <![CDATA[ <> ]]> PARENT_FOLDER_ID
+             WHERE DELETE_YN = 'N'
+               AND FOLDER_ID <![CDATA[ <> ]]> PARENT_FOLDER_ID
                AND PARENT_FOLDER_ID = #{folderId}
                AND USER_CODE = #{userCode}
              UNION ALL
@@ -40,14 +40,13 @@
                  , FOLDER_ID                                        AS PARENT_ID
                  , 'FILE'                                           AS ITEM_TYPE
                  , EXTENSION                                        AS EXTENSION
-                 , TO_CHAR(UPLOADED_AT, 'YYYY-MM-DD HH24:MI')       AS LAST_MODIFIED_AT
-                 , UPLOADED_AT		                                AS UPLOADED_AT
+                 , TO_CHAR(LAST_MODIFIED_AT, 'YYYY-MM-DD HH24:MI')  AS LAST_MODIFIED_AT
               FROM NAS_FILE
              WHERE DELETE_YN = 'N'
                AND FOLDER_ID = #{folderId}
                AND USER_CODE = #{userCode}
         ) T
-        ORDER BY ITEM_TYPE DESC, UPLOADED_AT DESC
+        ORDER BY ITEM_TYPE DESC, LAST_MODIFIED_AT DESC
     </select>
 
     <select id="getThumbnail" resultType="org.nas.api.model.v1.file.FilePreview">
@@ -80,6 +79,13 @@
          WHERE FILE_ID = #{fileId}
            AND FOLDER_ID = #{folderId}
            AND USER_CODE = #{userCode}
+    </update>
+
+    <update id="deletePreview">
+        UPDATE NAS_FILE_PREVIEW
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE FILE_ID = #{fileId}
     </update>
 
 </mapper>

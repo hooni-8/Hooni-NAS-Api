@@ -21,4 +21,6 @@ public interface FileMapper {
     FilePreview getPreview(FileView fileView);
 
     int deleteFile(DeleteFileVo deleteFileVo);
+
+    int deletePreview(DeleteFileVo deleteFileVo);
 }

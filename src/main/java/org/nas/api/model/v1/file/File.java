@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class File {
 
+    private String fileId;
+
     private String itemId;
 
     private String itemName;

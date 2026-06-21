@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FolderRequest {
+public class DeleteFolderRequest {
 
     private String folderId;
 
-    private String stToken;
+    private String parentFolderId;
 
 }
