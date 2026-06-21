@@ -14,7 +14,8 @@ spring:
     name: nas-api
 
   datasource:
-    url: ENC(jHJpIdrmQpepmMT+uKzBA55wfxLGr7A4KYaxT1gW33Q7/EmfBLDDk9RONnycS3gdhQm6uKW5EbvEantiwJJH73LkzMuPkojrc7sftlkzuDU=)
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: ENC(TdV0eYAL3LSlvbDFTztpiKz9tOxKWlCzeITpstvd8fndTDbS+DCNhbVIccLTxm73j7uwc84+1N03zraodFE1e7EC5oU6k/10+OWp25LN/xxRDwXmyMbw+ZqJiwJLbMel)
     username: ENC(beDx2gXAeAxV+VZd/SkiqMaczaTm3Rj2l0TpY8ogShokNlnu6tVAdjmdpC7o1aSC)
     password: ENC(4SyrWZHyzfkDQqeynwC4NEiGEME4hSF5EDy6TcXnQ864Fuggclf00RrBFbWYu9m0)
 
