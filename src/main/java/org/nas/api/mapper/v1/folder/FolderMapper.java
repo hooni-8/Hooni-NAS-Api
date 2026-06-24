@@ -13,6 +13,8 @@ public interface FolderMapper {
 
     int createFolder(String userCode, String folderName, String folderId);
 
+    int reNameFolder(String userCode, String folderId, String changeName, String parentFolderId);
+
     List<Folder> deleteFolderList(String userCode, String folderId);
 
     List<File> deleteFileList(String userCode, String folderId);

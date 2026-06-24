@@ -24,6 +24,14 @@
         )
     </insert>
 
+    <update id="reNameFolder">
+        UPDATE NAS_FOLDER
+           SET FOLDER_NAME = #{changeName}
+         WHERE USER_CODE = #{userCode}
+           AND FOLDER_ID = #{folderId}
+           AND PARENT_FOLDER_ID = #{parentFolderId}
+    </update>
+
     <select id="deleteFolderList" resultType="org.nas.api.model.v1.folder.Folder">
         WITH RECURSIVE FOLDER_TREE AS (
              SELECT FOLDER_ID, PARENT_FOLDER_ID

@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.commons.io.FilenameUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,8 +60,8 @@ public class UploadService {
 
         try {
             // 1. 원본 정보
-            String originName = file.getOriginName();
-            String extension = FileUtils.extractExtension(originName);
+            String originName = FilenameUtils.getBaseName(file.getOriginName());
+            String extension = FileUtils.extractExtension(file.getOriginName());
             long size = file.getSize();
 
             // 2. UUID 파일명

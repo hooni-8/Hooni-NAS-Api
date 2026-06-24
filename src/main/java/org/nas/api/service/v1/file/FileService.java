@@ -37,6 +37,10 @@ public class FileService {
 
     }
 
+    public int reNameFile(String userCode, String fileId, String changeName, String folderId) {
+        return fileMapper.reNameFile(userCode, fileId, changeName, folderId);
+    }
+
     public int deleteFile(String userCode, String folderId, String fileId) {
 
         DeleteFileVo vo = DeleteFileVo.builder()

@@ -72,6 +72,14 @@
            AND F.FILE_ID = #{fileId}
     </select>
 
+    <update id="reNameFile">
+        UPDATE NAS_FILE
+           SET ORIGIN_NAME = #{changeName}
+         WHERE USER_CODE = #{userCode}
+           AND FILE_ID = #{fileId}
+           AND FOLDER_ID = #{folderId}
+    </update>
+
     <update id="deleteFile" parameterType="org.nas.api.model.v1.file.DeleteFileVo">
         UPDATE NAS_FILE
            SET DELETE_YN = 'Y'

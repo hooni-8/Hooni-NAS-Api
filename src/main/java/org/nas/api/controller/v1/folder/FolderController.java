@@ -10,6 +10,7 @@ import org.nas.api.model.v1.code.response.CodeResult;
 import org.nas.api.model.v1.folder.Folder;
 import org.nas.api.model.v1.folder.request.CreateFolderRequest;
 import org.nas.api.model.v1.folder.request.DeleteFolderRequest;
+import org.nas.api.model.v1.folder.request.ReNameFolderRequest;
 import org.nas.api.service.v1.folder.FolderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +37,23 @@ public class FolderController extends BaseV1Controller {
     public ResponseEntity<CodeResult> createFolder(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody CreateFolderRequest request) {
         try {
             int result = folderService.createFolder(userInfo.getUserCode(), request.getFolderName(), request.getFolderId());
+
+            if (result > 0) {
+                return ResponseEntity.ok(CodeResult.getSuccess());
+            } else {
+                return ResponseEntity.ok(CodeResult.getError());
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.ok(CodeResult.getError());
+        }
+    }
+
+    @PostMapping("/rename")
+    public ResponseEntity<CodeResult> reNameFolder(@Parameter(hidden = true) @AuthenticationPrincipal DefaultUserInfo userInfo, @RequestBody ReNameFolderRequest request) {
+        try {
+            int result = folderService.reNameFolder(userInfo.getUserCode(), request.getFolderId(), request.getChangeName(), request.getParentFolderId());
 
             if (result > 0) {
                 return ResponseEntity.ok(CodeResult.getSuccess());

@@ -24,6 +24,10 @@ public class FolderService {
         return folderMapper.createFolder(userCode, folderName, folderId);
     }
 
+    public int reNameFolder(String userCode, String folderId, String changeName, String parentFolderId) {
+        return folderMapper.reNameFolder(userCode, folderId, changeName, parentFolderId);
+    }
+
     public int deleteFolder(String userCode, String folderId) {
 
         List<Folder> deleteFolderList = folderMapper.deleteFolderList(userCode, folderId);

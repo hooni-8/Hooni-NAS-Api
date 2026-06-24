@@ -22,5 +22,7 @@ public interface FileMapper {
 
     int deleteFile(DeleteFileVo deleteFileVo);
 
+    int reNameFile(String userCode, String fileId, String changeName, String folderId);
+
     int deletePreview(DeleteFileVo deleteFileVo);
 }
