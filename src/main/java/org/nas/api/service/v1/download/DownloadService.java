@@ -33,6 +33,10 @@ public class DownloadService {
 
         Path dirPath = Paths.get(filePathProperties.getBasePath(), fileInfo.getStoragePath(), fileInfo.getStoredName());
 
+        String fileName = fileInfo.getOriginName() + fileInfo.getExtension();
+
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
+
         Resource resource = new FileSystemResource(dirPath);
 
         return ResponseEntity.ok()
@@ -40,9 +44,7 @@ public class DownloadService {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" +
-                                URLEncoder.encode(fileInfo.getOriginName() + fileInfo.getExtension(), StandardCharsets.UTF_8) +
-                                "\""
+                        "attachment; filename*=UTF-8''" + encodedFileName
                 )
                 .body(resource);
     }
