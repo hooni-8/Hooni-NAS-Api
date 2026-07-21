@@ -23,6 +23,7 @@ spring:
     multipart:
       max-file-size: -1
       max-request-size: -1
+      location: /attachfile/data/upload-temp
 
 ###########################################################################
 ### log config 위치 설정
