@@ -8,6 +8,7 @@
           FROM NAS_FOLDER
          WHERE FOLDER_ID = PARENT_FOLDER_ID
            AND USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
     </select>
 
     <insert id="createFolder">
@@ -16,12 +17,16 @@
             , USER_CODE
             , PARENT_FOLDER_ID
             , FOLDER_NAME
-        ) VALUES (
+        )
+        SELECT
             uuid_in(md5(random()::text || now()::text)::cstring)
             , #{userCode}
-            , #{folderId}
+            , PARENT.FOLDER_ID
             , #{folderName}
-        )
+        FROM NAS_FOLDER PARENT
+        WHERE PARENT.FOLDER_ID = #{folderId}
+          AND PARENT.USER_CODE = #{userCode}
+          AND PARENT.DELETE_YN = 'N'
     </insert>
 
     <update id="reNameFolder">
@@ -30,20 +35,23 @@
          WHERE USER_CODE = #{userCode}
            AND FOLDER_ID = #{folderId}
            AND PARENT_FOLDER_ID = #{parentFolderId}
+           AND DELETE_YN = 'N'
     </update>
 
     <select id="deleteFolderList" resultType="org.nas.api.model.v1.folder.Folder">
         WITH RECURSIVE FOLDER_TREE AS (
              SELECT FOLDER_ID, PARENT_FOLDER_ID
-               FROM NAS_FOLDER
-              WHERE FOLDER_ID = #{folderId}
-                AND USER_CODE = #{userCode}
+              FROM NAS_FOLDER
+             WHERE FOLDER_ID = #{folderId}
+               AND USER_CODE = #{userCode}
+               AND DELETE_YN = 'N'
               UNION ALL
              SELECT F.FOLDER_ID, F.PARENT_FOLDER_ID
                FROM NAS_FOLDER F
-               JOIN FOLDER_TREE FT
-                 ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
-              WHERE USER_CODE = #{userCode}
+              JOIN FOLDER_TREE FT
+                ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+              WHERE F.USER_CODE = #{userCode}
+                AND F.DELETE_YN = 'N'
         )
         SELECT FOLDER_ID, PARENT_FOLDER_ID
           FROM FOLDER_TREE
@@ -51,9 +59,10 @@
 
     <select id="deleteFileList" resultType="org.nas.api.model.v1.file.File">
         SELECT FILE_ID
-          FROM NAS_FILE
+         FROM NAS_FILE
          WHERE USER_CODE = #{userCode}
            AND FOLDER_ID = #{folderId}
+           AND DELETE_YN = 'N'
     </select>
 
     <update id="deleteFolder">

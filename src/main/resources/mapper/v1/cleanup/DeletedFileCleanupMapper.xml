@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nas.api.mapper.v1.cleanup.DeletedFileCleanupMapper">
+
+    <select id="selectExpiredDeletedFiles" resultType="org.nas.api.model.v1.file.ExpiredDeletedFile">
+        SELECT F.FILE_ID AS FILE_ID
+             , F.STORAGE_PATH AS STORAGE_PATH
+             , F.STORED_NAME AS STORED_NAME
+             , FP.STORAGE_PATH AS PREVIEW_STORAGE_PATH
+             , FP.STORED_NAME AS PREVIEW_STORED_NAME
+          FROM NAS_FILE F
+         LEFT JOIN NAS_FILE_PREVIEW FP
+            ON FP.FILE_ID = F.FILE_ID
+         WHERE F.DELETE_YN = 'Y'
+           AND CURRENT_DATE - F.DELETED_AT::date &gt;= #{retentionDays}
+         ORDER BY F.DELETED_AT ASC
+         LIMIT #{limit}
+    </select>
+
+    <delete id="deletePreviewMetadata">
+        DELETE FROM NAS_FILE_PREVIEW
+         WHERE FILE_ID = #{fileId}
+    </delete>
+
+    <delete id="deleteExpiredFileMetadata">
+        DELETE FROM NAS_FILE
+         WHERE FILE_ID = #{fileId}
+           AND DELETE_YN = 'Y'
+           AND CURRENT_DATE - DELETED_AT::date &gt;= #{retentionDays}
+    </delete>
+
+    <delete id="deleteExpiredEmptyFolders">
+        DELETE FROM NAS_FOLDER F
+         WHERE F.DELETE_YN = 'Y'
+           AND CURRENT_DATE - F.DELETED_AT::date &gt;= #{retentionDays}
+           AND F.FOLDER_ID &lt;&gt; F.PARENT_FOLDER_ID
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FILE NF
+                WHERE NF.FOLDER_ID = F.FOLDER_ID
+           )
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER CHILD
+                WHERE CHILD.PARENT_FOLDER_ID = F.FOLDER_ID
+                  AND CHILD.FOLDER_ID &lt;&gt; F.FOLDER_ID
+           )
+    </delete>
+</mapper>

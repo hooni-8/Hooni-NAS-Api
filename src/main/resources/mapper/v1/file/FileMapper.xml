@@ -7,9 +7,10 @@
         SELECT FOLDER_ID
              , PARENT_FOLDER_ID
              , FOLDER_NAME
-          FROM NAS_FOLDER
+         FROM NAS_FOLDER
          WHERE FOLDER_ID = #{folderId}
            AND USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
     </select>
 
     <select id="selectFileList" resultType="org.nas.api.model.v1.file.File">
@@ -78,6 +79,7 @@
          WHERE USER_CODE = #{userCode}
            AND FILE_ID = #{fileId}
            AND FOLDER_ID = #{folderId}
+           AND DELETE_YN = 'N'
     </update>
 
     <update id="deleteFile" parameterType="org.nas.api.model.v1.file.DeleteFileVo">
@@ -87,6 +89,7 @@
          WHERE FILE_ID = #{fileId}
            AND FOLDER_ID = #{folderId}
            AND USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
     </update>
 
     <update id="deletePreview">

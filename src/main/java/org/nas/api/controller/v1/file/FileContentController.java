@@ -1,5 +1,6 @@
 package org.nas.api.controller.v1.file;
 
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.nas.api.model.v1.folder.request.FolderRequest;
 import org.nas.api.service.v1.file.FileContentService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -77,8 +79,12 @@ public class FileContentController extends BaseV1Controller {
 
     @GetMapping("/video/{fileId}")
     public ResponseEntity<Resource> previewVideo(@PathVariable("fileId") String fileId, FolderRequest request) throws IOException {
+        if (request == null || request.getStToken() == null || request.getStToken().isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         try {
-            VideoTokenPayload payload = videoTokenProvider.validate(request.getStToken());
+            VideoTokenPayload payload = videoTokenProvider.validate(request.getStToken(), fileId);
 
             FilePreviewResult result = fileContentService.previewFile(payload.getUserCode(), fileId, request.getFolderId());
 
@@ -87,11 +93,17 @@ public class FileContentController extends BaseV1Controller {
             }
 
             return ResponseEntity.ok()
-                    .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                    // stToken은 URL에 포함되므로 브라우저·중간 프록시가 응답을 보관하지 않게 한다.
+                    .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
+                    .header("Referrer-Policy", "no-referrer")
                     .contentType(result.getMediaType())
                     .body(result.getResource());
 
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Invalid video token. fileId={}", fileId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
+            log.error("Video preview failed. fileId={}", fileId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

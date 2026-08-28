@@ -2,6 +2,7 @@
 ### Server 설정
 ###########################################################################
 server:
+  port: 8081
   servlet:
     context-path: /${spring.application.root}
 
@@ -21,8 +22,8 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: -1
-      max-request-size: -1
+      max-file-size: 5GB
+      max-request-size: 5GB
 
 ###########################################################################
 ### log config 위치 설정
@@ -82,6 +83,20 @@ file:
     temp-base-path: /data/upload-temp
     thumbnail-base-path: upload-thumbnail
     ffmpeg-path: C:\Users\Lee_SH\Desktop\Dev\ffmpeg-2026-01-29-git-c898ddb8fe-full_build\bin\ffmpeg
+
+###########################################################################
+### 논리 삭제 파일 정리 설정
+###########################################################################
+cleanup:
+  deleted-file:
+    retention-days: 30
+    batch-size: 100
+    cron: "0 30 3 * * *"
+    zone: Asia/Seoul
+  temporary-upload:
+    retention-hours: 24
+    cron: "0 0 4 * * *"
+    zone: Asia/Seoul
 
 ###########################################################################
 ### jwt 설정

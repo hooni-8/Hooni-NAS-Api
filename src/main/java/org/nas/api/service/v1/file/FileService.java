@@ -8,7 +8,9 @@ import org.nas.api.model.v1.file.File;
 import org.nas.api.model.v1.file.FileResult;
 import org.nas.api.model.v1.file.FileView;
 import org.nas.api.model.v1.folder.Folder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,6 +29,11 @@ public class FileService {
                 .build();
 
         Folder folderInfo = fileMapper.selectFolderInfo(fileView);
+
+        if (folderInfo == null) {
+            // 존재 여부와 소유 여부를 구분하지 않아 다른 사용자의 폴더 정보를 노출하지 않는다.
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "폴더를 찾을 수 없습니다.");
+        }
 
         List<File> file = fileMapper.selectFileList(fileView);
 

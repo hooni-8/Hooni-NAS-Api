@@ -2,6 +2,8 @@ package org.nas.api.config;
 
 import lombok.RequiredArgsConstructor;
 import org.nas.api.common.filter.CustomAuthenticationFilter;
+import org.nas.api.common.response.ApiSecurityResponseWriter;
+import org.springframework.http.HttpStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     private final CustomAuthenticationFilter customAuthenticationFilter;
+    private final ApiSecurityResponseWriter securityResponseWriter;
 
     @Bean
     public SecurityFilterChain init(HttpSecurity http) throws Exception {
@@ -27,9 +30,18 @@ public class WebSecurityConfig {
         http.formLogin(login -> login.disable());
         http.logout(logout -> logout.disable());
         http.httpBasic(basic -> basic.disable());
+        http.exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, exception) ->
+                        securityResponseWriter.write(response, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"))
+                .accessDeniedHandler((request, response, exception) ->
+                        securityResponseWriter.write(response, HttpStatus.FORBIDDEN, "FORBIDDEN"))
+        );
 
         http.authorizeHttpRequests(requests -> {
-            requests.anyRequest().permitAll();      // 모든 요청 허용
+            // 영상은 Gateway가 발급한 별도 단기 토큰(stToken)을 controller에서 검증한다.
+            requests.requestMatchers("/api/v1/file/video/**").permitAll();
+            requests.requestMatchers("/api-docs/**", "/swagger-ui/**", "/").permitAll();
+            requests.anyRequest().authenticated();
         });
 
         http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

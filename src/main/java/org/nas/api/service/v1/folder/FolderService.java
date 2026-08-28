@@ -6,6 +6,7 @@ import org.nas.api.mapper.v1.folder.FolderMapper;
 import org.nas.api.model.v1.file.File;
 import org.nas.api.model.v1.folder.Folder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,29 +29,29 @@ public class FolderService {
         return folderMapper.reNameFolder(userCode, folderId, changeName, parentFolderId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public int deleteFolder(String userCode, String folderId) {
 
         List<Folder> deleteFolderList = folderMapper.deleteFolderList(userCode, folderId);
 
-        try {
-            for (Folder folder : deleteFolderList) {
-
-                List<File> deleteFileList = folderMapper.deleteFileList(userCode, folder.getFolderId());
-
-                if (!deleteFileList.isEmpty()) {
-                    for (File file : deleteFileList) {
-                        folderMapper.deleteFile(userCode, file.getFileId(), folder.getFolderId());
-
-                        folderMapper.deletePreview(file.getFileId());
-                    }
-                }
-
-                folderMapper.deleteFolder(userCode, folder.getParentFolderId(), folder.getFolderId());
-            }
-
-            return 1;
-        } catch (Exception e) {
+        if (deleteFolderList.isEmpty()) {
             return 0;
         }
+
+        for (Folder folder : deleteFolderList) {
+            List<File> deleteFileList = folderMapper.deleteFileList(userCode, folder.getFolderId());
+
+            if (!deleteFileList.isEmpty()) {
+                for (File file : deleteFileList) {
+                    folderMapper.deleteFile(userCode, file.getFileId(), folder.getFolderId());
+
+                    folderMapper.deletePreview(file.getFileId());
+                }
+            }
+
+            folderMapper.deleteFolder(userCode, folder.getParentFolderId(), folder.getFolderId());
+        }
+
+        return 1;
     }
 }

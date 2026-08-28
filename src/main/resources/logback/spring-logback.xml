@@ -13,7 +13,4 @@
 <!--        <appender-ref ref="FILE"/>-->
 <!--        <appender-ref ref="ERROR_FILE"/>-->
     </root>
-    <logger name="jdbc.sqltiming" level="INFO"/>
-    <logger name="jdbc.resultsettable" level="OFF"/>
-
 </configuration>

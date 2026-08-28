@@ -9,8 +9,8 @@ import org.nas.api.model.v1.upload.FileUpload;
 import org.nas.api.model.v1.upload.PreviewUpload;
 import org.nas.api.model.v1.upload.TempUploadFile;
 import org.nas.api.properties.FilePathProperties;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.commons.io.FilenameUtils;
@@ -44,7 +44,12 @@ public class UploadService {
         Files.createDirectories(tempDir);
 
         Path tempPath = tempDir.resolve(UUID.randomUUID().toString());
-        file.transferTo(tempPath.toFile());
+        try {
+            file.transferTo(tempPath.toFile());
+        } catch (IOException e) {
+            Files.deleteIfExists(tempPath);
+            throw e;
+        }
 
         return TempUploadFile.builder()
                 .originName(file.getOriginalFilename())
@@ -54,10 +59,11 @@ public class UploadService {
 
     }
 
-    @Async("uploadExecutor")
-    public void uploadAsync(String userCode, String folderId, long lastModifiedAt, TempUploadFile file) {
+    @Transactional(rollbackFor = Exception.class)
+    public void upload(String userCode, String folderId, long lastModifiedAt, TempUploadFile file) throws IOException {
         log.info("========= FILE Upload Start =========");
 
+        Path targetPath = null;
         try {
             // 1. 원본 정보
             String originName = FilenameUtils.getBaseName(file.getOriginName());
@@ -81,7 +87,7 @@ public class UploadService {
             Files.createDirectories(dirPath);
 
             // 4. 실제 저장
-            Path targetPath = dirPath.resolve(storedName);
+            targetPath = dirPath.resolve(storedName);
 
             // 임시 파일 → 최종 위치 이동
             Files.move(file.getTempPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -111,7 +117,16 @@ public class UploadService {
             }
 
         } catch (Exception e) {
-            log.error("파일 업로드 실패: {} => {}", file.getOriginName(), e.getMessage());
+            deleteFileQuietly(targetPath);
+            log.error("파일 업로드 실패: {}", file.getOriginName(), e);
+
+            if (e instanceof IOException ioException) {
+                throw ioException;
+            }
+            throw new IOException("파일 저장 또는 메타데이터 등록에 실패했습니다.", e);
+        } finally {
+            // 이동 전 실패하거나 서버 처리 중 오류가 나도 임시 파일을 남기지 않는다.
+            deleteFileQuietly(file.getTempPath());
         }
     }
 
@@ -136,10 +151,16 @@ public class UploadService {
         String thumbnailName = "thumbnail_" + baseName + thumbExt;
         Path thumbnailPath = thumbnailDir.resolve(thumbnailName);
 
+        boolean thumbnailCreated;
         if (isVideo) {
-            createVideoThumbnail(originalPath, thumbnailPath);
+            thumbnailCreated = createVideoThumbnail(originalPath, thumbnailPath);
         } else {
-            createImageThumbnail(originalPath, thumbnailPath, isPng);
+            thumbnailCreated = createImageThumbnail(originalPath, thumbnailPath, isPng);
+        }
+
+        if (!thumbnailCreated) {
+            log.warn("Thumbnail metadata is not saved because thumbnail creation failed: {}", originalPath);
+            return;
         }
 
         if (isSave) {
@@ -154,7 +175,7 @@ public class UploadService {
     }
 
     // 이미지 썸네일 생성
-    private void createImageThumbnail(Path original, Path thumbnail, boolean isPng) throws IOException {
+    private boolean createImageThumbnail(Path original, Path thumbnail, boolean isPng) {
         try {
             Thumbnails.of(original.toFile())
                     .size(300, 300)
@@ -162,13 +183,15 @@ public class UploadService {
                     .outputQuality(isPng ? 1.0f : 0.9f)
                     .keepAspectRatio(true)
                     .toFile(thumbnail.toFile());
+            return Files.isRegularFile(thumbnail);
         } catch (Exception e) {
-            log.warn("Thumbnail Create failed: {}", original);
+            log.warn("Thumbnail Create failed: {}", original, e);
+            return false;
         }
     }
 
     // 비디오 썸네일 생성
-    private void createVideoThumbnail(Path original, Path thumbnailPath) {
+    private boolean createVideoThumbnail(Path original, Path thumbnailPath) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
                     filePathProperties.getFfmpegPath(),
@@ -193,11 +216,24 @@ public class UploadService {
 
             int exitCode = process.waitFor();
             log.info("FFmpeg finished. exitCode={}", exitCode);
+            return exitCode == 0 && Files.isRegularFile(thumbnailPath);
 
         } catch (Exception e) {
             log.warn("Video thumbnail create failed: {}", original, e);
+            return false;
         }
     }
 
+    private void deleteFileQuietly(Path path) {
+        if (path == null) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            log.warn("파일 정리에 실패했습니다. path={}", path, e);
+        }
+    }
 
 }
