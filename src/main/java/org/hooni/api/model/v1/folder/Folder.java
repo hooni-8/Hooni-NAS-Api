@@ -1,0 +1,22 @@
+package org.hooni.api.model.v1.folder;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class Folder {
+
+    private String folderId;
+
+    private String parentFolderId;
+
+    private String folderName;
+}
+

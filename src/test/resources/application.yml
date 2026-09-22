@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:base-api;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+mybatis:
+  type-aliases-package: org.hooni.api
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations:
+    - classpath:mapper/**/*Mapper.xml
+
+jwt:
+  algorithm: RS256
+  issuer: hooni-template-auth
+  audience: hooni-template-api
+  jwk-set-uri: http://localhost/unused-in-unit-tests

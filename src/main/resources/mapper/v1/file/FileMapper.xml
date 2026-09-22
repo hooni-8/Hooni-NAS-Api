@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.hooni.api.mapper.v1.file.FileMapper">
+
+    <select id="selectFolderInfo" resultType="org.hooni.api.model.v1.folder.Folder">
+        SELECT FOLDER_ID
+             , PARENT_FOLDER_ID
+             , FOLDER_NAME
+         FROM NAS_FOLDER
+         WHERE FOLDER_ID = #{folderId}
+           AND USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
+    </select>
+
+    <select id="selectFileList" resultType="org.hooni.api.model.v1.file.File">
+        SELECT ITEM_ID
+             , ITEM_NAME
+             , ITEM_SIZE
+             , PARENT_ID
+             , ITEM_TYPE
+             , EXTENSION
+             , LAST_MODIFIED_AT
+          FROM (
+            SELECT FOLDER_ID                                        AS ITEM_ID
+                 , FOLDER_NAME                                      AS ITEM_NAME
+                 , 0                                                AS ITEM_SIZE
+                 , PARENT_FOLDER_ID                                 AS PARENT_ID
+                 , 'FOLDER'                                         AS ITEM_TYPE
+                 , NULL                                             AS EXTENSION
+                 , TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI')        AS LAST_MODIFIED_AT
+              FROM NAS_FOLDER
+             WHERE DELETE_YN = 'N'
+               AND FOLDER_ID <![CDATA[ <> ]]> PARENT_FOLDER_ID
+               AND PARENT_FOLDER_ID = #{folderId}
+               AND USER_CODE = #{userCode}
+             UNION ALL
+            SELECT FILE_ID                                          AS ITEM_ID
+                 , ORIGIN_NAME                                      AS ITEM_NAME
+                 , FILE_SIZE                                        AS ITEM_SIZE
+                 , FOLDER_ID                                        AS PARENT_ID
+                 , 'FILE'                                           AS ITEM_TYPE
+                 , EXTENSION                                        AS EXTENSION
+                 , TO_CHAR(LAST_MODIFIED_AT, 'YYYY-MM-DD HH24:MI')  AS LAST_MODIFIED_AT
+              FROM NAS_FILE
+             WHERE DELETE_YN = 'N'
+               AND FOLDER_ID = #{folderId}
+               AND USER_CODE = #{userCode}
+        ) T
+        ORDER BY ITEM_TYPE DESC, LAST_MODIFIED_AT DESC
+    </select>
+
+    <select id="getThumbnail" resultType="org.hooni.api.model.v1.file.FilePreview">
+        SELECT FP.STORAGE_PATH
+             , FP.STORED_NAME
+          FROM NAS_FILE F
+          LEFT JOIN NAS_FILE_PREVIEW FP
+            ON F.FILE_ID = FP.FILE_ID
+         WHERE F.DELETE_YN = 'N'
+           AND F.USER_CODE = #{userCode}
+           AND F.FOLDER_ID = #{folderId}
+           AND F.FILE_ID = #{fileId}
+    </select>
+
+    <select id="getPreview" resultType="org.hooni.api.model.v1.file.FilePreview">
+        SELECT F.STORAGE_PATH
+             , F.STORED_NAME
+             , F.EXTENSION
+        FROM NAS_FILE F
+        WHERE F.DELETE_YN = 'N'
+          AND F.USER_CODE = #{userCode}
+          AND F.FOLDER_ID = #{folderId}
+          AND F.FILE_ID = #{fileId}
+    </select>
+
+    <update id="reNameFile">
+        UPDATE NAS_FILE
+        SET ORIGIN_NAME = #{changeName}
+        WHERE USER_CODE = #{userCode}
+          AND FILE_ID = #{fileId}
+          AND FOLDER_ID = #{folderId}
+          AND DELETE_YN = 'N'
+    </update>
+
+    <update id="deleteFile" parameterType="org.hooni.api.model.v1.file.DeleteFile">
+        UPDATE NAS_FILE
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE FILE_ID = #{fileId}
+          AND FOLDER_ID = #{folderId}
+          AND USER_CODE = #{userCode}
+          AND DELETE_YN = 'N'
+    </update>
+
+    <update id="deletePreview">
+        UPDATE NAS_FILE_PREVIEW
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE FILE_ID = #{fileId}
+    </update>
+
+</mapper>

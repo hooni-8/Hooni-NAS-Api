@@ -1,0 +1,92 @@
+###########################################################################
+### Server 설정
+###########################################################################
+server:
+  port: 8080
+  max-http-request-header-size: 16KB
+  servlet:
+    context-path: /${spring.application.root}
+
+###########################################################################
+### Spring 설정
+###########################################################################
+spring:
+  application:
+    root: nas
+    name: nas-api
+
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: ENC(WlSGzzM51GPKsRh0TIqbGpbrw7cdBAKOofaDmapOgxbtTIuWKTtaEvKE2E+3p1dApm/rjKPzOsxkrvbF9AMpQhAUov7+IpdqKfgl5Qb/TuB2KsaoWzBmitvaM34syMUq)
+    username: ENC(beDx2gXAeAxV+VZd/SkiqMaczaTm3Rj2l0TpY8ogShokNlnu6tVAdjmdpC7o1aSC)
+    password: ENC(4SyrWZHyzfkDQqeynwC4NEiGEME4hSF5EDy6TcXnQ864Fuggclf00RrBFbWYu9m0)
+
+  servlet:
+    multipart:
+      max-file-size: 5GB
+      max-request-size: 5GB
+
+###########################################################################
+### mybatis 설정
+###########################################################################
+mybatis:
+  type-aliases-package: org.hooni.api
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations:
+    - classpath:mapper/**/*Mapper.xml
+
+###########################################################################
+### log config 위치 설정
+###########################################################################
+logging:
+  config: classpath:logback/spring-logback.xml
+
+###########################################################################
+### Swagger 설정
+###########################################################################
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+###########################################################################
+### jwt 설정
+###########################################################################
+jwt:
+  algorithm: RS256
+  issuer: hooni-template-auth
+  audience: hooni-template-api
+  jwk-set-uri: http://localhost:8081/oauth2/jwks
+
+###########################################################################
+### jasypt 설정
+###########################################################################
+jasypt:
+  encryptor:
+    password: ${ENCRYPTOR_PROFILE}
+
+###########################################################################
+### File Path 설정
+###########################################################################
+file:
+  path:
+    base-path: C:/dev/attachfile
+    temp-base-path: /data/upload-temp
+    thumbnail-base-path: upload-thumbnail
+    ffmpeg-path: C:\Users\Lee_SH\Desktop\Dev\ffmpeg-2026-01-29-git-c898ddb8fe-full_build\bin\ffmpeg
+
+###########################################################################
+### 논리 삭제 파일 정리 설정
+###########################################################################
+cleanup:
+  deleted-file:
+    retention-days: 30
+    batch-size: 100
+    cron: "0 30 3 * * *"
+    zone: Asia/Seoul
+  temporary-upload:
+    retention-hours: 24
+    cron: "0 0 4 * * *"
+    zone: Asia/Seoul

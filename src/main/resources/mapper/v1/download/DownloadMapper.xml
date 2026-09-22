@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.hooni.api.mapper.v1.download.DownloadMapper">
+
+    <select id="selectDownloadFileInfo" resultType="org.hooni.api.model.v1.download.FileDownload">
+        SELECT STORAGE_PATH
+             , STORED_NAME
+             , ORIGIN_NAME
+             , EXTENSION
+          FROM NAS_FILE
+         WHERE USER_CODE = #{userCode}
+           AND FOLDER_ID = #{folderId}
+           AND FILE_ID = #{fileId}
+    </select>
+
+
+</mapper>

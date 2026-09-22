@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.hooni.api.mapper.v1.folder.FolderMapper">
+
+    <select id="rootFolder" resultType="org.hooni.api.model.v1.folder.Folder">
+        SELECT FOLDER_ID
+          FROM NAS_FOLDER
+         WHERE FOLDER_ID = PARENT_FOLDER_ID
+           AND USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
+    </select>
+
+    <insert id="createFolder">
+        INSERT INTO NAS_FOLDER (
+             FOLDER_ID
+           , USER_CODE
+           , PARENT_FOLDER_ID
+           , FOLDER_NAME
+        )
+        SELECT
+            uuid_in(md5(random()::text || now()::text)::cstring)
+             , #{userCode}
+             , PARENT.FOLDER_ID
+             , #{folderName}
+        FROM NAS_FOLDER PARENT
+        WHERE PARENT.FOLDER_ID = #{folderId}
+          AND PARENT.USER_CODE = #{userCode}
+          AND PARENT.DELETE_YN = 'N'
+    </insert>
+
+    <update id="reNameFolder">
+        UPDATE NAS_FOLDER
+        SET FOLDER_NAME = #{changeName}
+        WHERE USER_CODE = #{userCode}
+          AND FOLDER_ID = #{folderId}
+          AND PARENT_FOLDER_ID = #{parentFolderId}
+          AND DELETE_YN = 'N'
+    </update>
+
+    <select id="deleteFolderList" resultType="org.hooni.api.model.v1.folder.Folder">
+        WITH RECURSIVE FOLDER_TREE AS (
+            SELECT FOLDER_ID, PARENT_FOLDER_ID
+            FROM NAS_FOLDER
+            WHERE FOLDER_ID = #{folderId}
+              AND USER_CODE = #{userCode}
+              AND DELETE_YN = 'N'
+            UNION ALL
+            SELECT F.FOLDER_ID, F.PARENT_FOLDER_ID
+            FROM NAS_FOLDER F
+                     JOIN FOLDER_TREE FT
+                          ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+            WHERE F.USER_CODE = #{userCode}
+              AND F.DELETE_YN = 'N'
+        )
+        SELECT FOLDER_ID, PARENT_FOLDER_ID
+        FROM FOLDER_TREE
+    </select>
+
+    <select id="deleteFileList" resultType="org.hooni.api.model.v1.file.File">
+        SELECT FILE_ID
+        FROM NAS_FILE
+        WHERE USER_CODE = #{userCode}
+          AND FOLDER_ID = #{folderId}
+          AND DELETE_YN = 'N'
+    </select>
+
+    <update id="deleteFolder">
+        UPDATE NAS_FOLDER
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE DELETE_YN = 'N'
+          AND USER_CODE = #{userCode}
+          AND PARENT_FOLDER_ID = #{parentFolderId}
+          AND FOLDER_ID = #{folderId}
+    </update>
+
+    <delete id="deleteFile">
+        UPDATE NAS_FILE
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE DELETE_YN = 'N'
+          AND USER_CODE = #{userCode}
+          AND FILE_ID = #{fileId}
+          AND FOLDER_ID = #{folderId}
+    </delete>
+
+    <update id="deletePreview">
+        UPDATE NAS_FILE_PREVIEW
+        SET DELETE_YN = 'Y'
+          , DELETED_AT = NOW()
+        WHERE DELETE_YN = 'N'
+          AND FILE_ID = #{fileId}
+    </update>
+
+</mapper>
