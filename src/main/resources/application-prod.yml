@@ -15,3 +15,13 @@ jwt:
   issuer: hooni-template-auth
   audience: hooni-template-api
   jwk-set-uri: http://auth-api-service.auth.svc/oauth2/jwks
+
+###########################################################################
+### File Path 설정
+###########################################################################
+file:
+  path:
+    base-path: /attachfile
+    temp-base-path: /data/upload-temp
+    thumbnail-base-path: upload-thumbnail
+    ffmpeg-path: /usr/bin/ffmpeg
