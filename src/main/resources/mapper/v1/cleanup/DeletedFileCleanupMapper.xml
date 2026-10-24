@@ -13,6 +13,7 @@
          LEFT JOIN NAS_FILE_PREVIEW FP
             ON FP.FILE_ID = F.FILE_ID
          WHERE F.DELETE_YN = 'Y'
+           AND F.TRASH_ID IS NULL
            AND CURRENT_DATE - F.DELETED_AT::date &gt;= #{retentionDays}
          ORDER BY F.DELETED_AT ASC
          LIMIT #{limit}
@@ -27,12 +28,14 @@
         DELETE FROM NAS_FILE
          WHERE FILE_ID = #{fileId}
            AND DELETE_YN = 'Y'
+           AND TRASH_ID IS NULL
            AND CURRENT_DATE - DELETED_AT::date &gt;= #{retentionDays}
     </delete>
 
     <delete id="deleteExpiredEmptyFolders">
         DELETE FROM NAS_FOLDER F
          WHERE F.DELETE_YN = 'Y'
+           AND F.TRASH_ID IS NULL
            AND CURRENT_DATE - F.DELETED_AT::date &gt;= #{retentionDays}
            AND F.FOLDER_ID &lt;&gt; F.PARENT_FOLDER_ID
            AND NOT EXISTS (

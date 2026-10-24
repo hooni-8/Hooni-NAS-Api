@@ -47,7 +47,7 @@
                AND FOLDER_ID = #{folderId}
                AND USER_CODE = #{userCode}
         ) T
-        ORDER BY ITEM_TYPE DESC, LAST_MODIFIED_AT DESC
+        ORDER BY ITEM_TYPE DESC, LAST_MODIFIED_AT DESC, ITEM_NAME
     </select>
 
     <select id="getThumbnail" resultType="org.hooni.api.model.v1.file.FilePreview">
@@ -80,23 +80,6 @@
           AND FILE_ID = #{fileId}
           AND FOLDER_ID = #{folderId}
           AND DELETE_YN = 'N'
-    </update>
-
-    <update id="deleteFile" parameterType="org.hooni.api.model.v1.file.DeleteFile">
-        UPDATE NAS_FILE
-        SET DELETE_YN = 'Y'
-          , DELETED_AT = NOW()
-        WHERE FILE_ID = #{fileId}
-          AND FOLDER_ID = #{folderId}
-          AND USER_CODE = #{userCode}
-          AND DELETE_YN = 'N'
-    </update>
-
-    <update id="deletePreview">
-        UPDATE NAS_FILE_PREVIEW
-        SET DELETE_YN = 'Y'
-          , DELETED_AT = NOW()
-        WHERE FILE_ID = #{fileId}
     </update>
 
 </mapper>

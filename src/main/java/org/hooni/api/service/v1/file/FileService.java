@@ -3,11 +3,11 @@ package org.hooni.api.service.v1.file;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hooni.api.mapper.v1.file.FileMapper;
-import org.hooni.api.model.v1.file.DeleteFile;
 import org.hooni.api.model.v1.file.File;
 import org.hooni.api.model.v1.file.FileView;
 import org.hooni.api.model.v1.file.response.FileListResponse;
 import org.hooni.api.model.v1.folder.Folder;
+import org.hooni.api.service.v1.trash.TrashService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,6 +20,7 @@ import java.util.List;
 public class FileService {
 
     private final FileMapper fileMapper;
+    private final TrashService trashService;
 
     public FileListResponse selectFileList(String userCode, String folderId) {
 
@@ -48,13 +49,6 @@ public class FileService {
     }
 
     public int deleteFile(String userCode, String folderId, String fileId) {
-
-        DeleteFile vo = DeleteFile.builder()
-                .userCode(userCode)
-                .folderId(folderId)
-                .fileId(fileId)
-                .build();
-
-        return fileMapper.deleteFile(vo);
+        return trashService.moveFileToTrash(userCode, folderId, fileId);
     }
 }

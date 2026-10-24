@@ -6,6 +6,7 @@ import org.hooni.api.mapper.v1.cleanup.DeletedFileCleanupMapper;
 import org.hooni.api.model.v1.file.ExpiredDeletedFile;
 import org.hooni.api.properties.DeletedFileCleanupProperties;
 import org.hooni.api.properties.FilePathProperties;
+import org.hooni.api.service.v1.trash.TrashService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class DeletedFileCleanupService {
     private final DeletedFileCleanupMapper cleanupMapper;
     private final FilePathProperties filePathProperties;
     private final DeletedFileCleanupProperties cleanupProperties;
+    private final TrashService trashService;
 
     /**
      * 보관 기간이 지난 논리 삭제 파일을 실제 저장소와 DB에서 영구 삭제한다.
@@ -30,6 +32,9 @@ public class DeletedFileCleanupService {
      */
     @Transactional
     public void purgeExpiredDeletedFiles() {
+        trashService.purgeExpiredTrashEntries();
+
+        // TRASH_ID가 없는 기존 논리 삭제 데이터만 이전 방식으로 정리한다.
         int retentionDays = cleanupProperties.getRetentionDays();
         List<ExpiredDeletedFile> expiredFiles = cleanupMapper.selectExpiredDeletedFiles(
                 retentionDays,

@@ -1,7 +1,6 @@
 package org.hooni.api.mapper.v1.file;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.hooni.api.model.v1.file.DeleteFile;
 import org.hooni.api.model.v1.file.File;
 import org.hooni.api.model.v1.file.FilePreview;
 import org.hooni.api.model.v1.file.FileView;
@@ -20,9 +19,5 @@ public interface FileMapper {
 
     FilePreview getPreview(FileView fileView);
 
-    int deleteFile(DeleteFile deleteFileVo);
-
     int reNameFile(String userCode, String fileId, String changeName, String folderId);
-
-    int deletePreview(DeleteFile deleteFileVo);
 }

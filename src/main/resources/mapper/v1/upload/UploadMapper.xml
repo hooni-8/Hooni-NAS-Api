@@ -5,40 +5,40 @@
 
     <insert id="upload">
         INSERT INTO NAS_FILE (
-                               FILE_ID
-                             , FOLDER_ID
-                             , USER_CODE
-                             , ORIGIN_NAME
-                             , STORED_NAME
-                             , EXTENSION
-                             , FILE_SIZE
-                             , STORAGE_PATH
-                             , LAST_MODIFIED_AT
+               FILE_ID
+             , FOLDER_ID
+             , USER_CODE
+             , ORIGIN_NAME
+             , STORED_NAME
+             , EXTENSION
+             , FILE_SIZE
+             , STORAGE_PATH
+             , LAST_MODIFIED_AT
         ) VALUES (
-                   #{fileId}
-                 , #{folderId}
-                 , #{userCode}
-                 , #{originName}
-                 , #{storedName}
-                 , #{extension}
-                 , #{fileSize}
-                 , #{storagePath}
-                 , #{lastModifiedAt}
-                 )
+               #{fileId}
+             , #{folderId}
+             , #{userCode}
+             , #{originName}
+             , #{storedName}
+             , #{extension}
+             , #{fileSize}
+             , #{storagePath}
+             , #{lastModifiedAt}
+         )
     </insert>
 
     <insert id="createPreview">
         INSERT INTO NAS_FILE_PREVIEW (
-                                       PREVIEW_ID
-                                     , FILE_ID
-                                     , STORED_NAME
-                                     , STORAGE_PATH
+               PREVIEW_ID
+             , FILE_ID
+             , STORED_NAME
+             , STORAGE_PATH
         ) VALUES (
-                   uuid_in(md5(random()::text || now()::text)::cstring)
-                 , #{fileId}
-                 , #{storedName}
-                 , #{storagePath}
-                 )
+               uuid_in(md5(random()::text || now()::text)::cstring)
+             , #{fileId}
+             , #{storedName}
+             , #{storagePath}
+         )
     </insert>
 
 </mapper>

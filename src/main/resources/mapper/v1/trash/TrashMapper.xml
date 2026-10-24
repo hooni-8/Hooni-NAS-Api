@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.hooni.api.mapper.v1.trash.TrashMapper">
+
+    <!-- 삭제 요청 한 건을 대표하는 휴지통 이력을 생성한다. -->
+    <insert id="insertFileTrashEntry">
+        INSERT INTO NAS_TRASH_ENTRY (
+            TRASH_ID,
+            USER_CODE,
+            ROOT_ITEM_ID,
+            ROOT_ITEM_TYPE,
+            ORIGINAL_PARENT_ID,
+            DELETED_AT,
+            EXPIRES_AT,
+            PURGE_STATUS,
+            CREATED_AT,
+            UPDATED_AT
+        )
+        SELECT #{trashId},
+               F.USER_CODE,
+               F.FILE_ID,
+               'FILE',
+               F.FOLDER_ID,
+               NOW(),
+               NOW() + (#{retentionDays} * INTERVAL '1 day'),
+               'ACTIVE',
+               NOW(),
+               NOW()
+          FROM NAS_FILE F
+         WHERE F.USER_CODE = #{userCode}
+           AND F.FOLDER_ID = #{folderId}
+           AND F.FILE_ID = #{fileId}
+           AND F.DELETE_YN = 'N'
+    </insert>
+
+    <insert id="insertFolderTrashEntry">
+        INSERT INTO NAS_TRASH_ENTRY (
+            TRASH_ID,
+            USER_CODE,
+            ROOT_ITEM_ID,
+            ROOT_ITEM_TYPE,
+            ORIGINAL_PARENT_ID,
+            DELETED_AT,
+            EXPIRES_AT,
+            PURGE_STATUS,
+            CREATED_AT,
+            UPDATED_AT
+        )
+        SELECT #{trashId},
+               F.USER_CODE,
+               F.FOLDER_ID,
+               'FOLDER',
+               F.PARENT_FOLDER_ID,
+               NOW(),
+               NOW() + (#{retentionDays} * INTERVAL '1 day'),
+               'ACTIVE',
+               NOW(),
+               NOW()
+          FROM NAS_FOLDER F
+         WHERE F.USER_CODE = #{userCode}
+           AND F.FOLDER_ID = #{folderId}
+           AND F.FOLDER_ID <![CDATA[ <> ]]> F.PARENT_FOLDER_ID
+           AND F.DELETE_YN = 'N'
+    </insert>
+
+    <!-- 단일 파일과 미리보기를 동일한 삭제 시각으로 논리 삭제한다. -->
+    <update id="moveFilePreviewToTrash">
+        UPDATE NAS_FILE_PREVIEW
+           SET DELETE_YN = 'Y',
+               DELETED_AT = NOW()
+         WHERE FILE_ID = #{fileId}
+           AND DELETE_YN = 'N'
+    </update>
+
+    <update id="moveFileToTrash">
+        UPDATE NAS_FILE
+           SET DELETE_YN = 'Y',
+               DELETED_AT = NOW(),
+               TRASH_ID = #{trashId}
+         WHERE USER_CODE = #{userCode}
+           AND FOLDER_ID = #{folderId}
+           AND FILE_ID = #{fileId}
+           AND DELETE_YN = 'N'
+    </update>
+
+    <!--
+        폴더 삭제는 활성 상태인 폴더 트리만 탐색한다.
+        이전에 따로 삭제된 하위 항목은 기존 TRASH_ID를 유지하므로 이번 삭제 묶음에 포함되지 않는다.
+    -->
+    <update id="moveFolderPreviewsToTrash">
+        WITH RECURSIVE FOLDER_TREE AS (
+            SELECT FOLDER_ID
+              FROM NAS_FOLDER
+             WHERE USER_CODE = #{userCode}
+               AND FOLDER_ID = #{folderId}
+               AND DELETE_YN = 'N'
+            UNION ALL
+            SELECT F.FOLDER_ID
+              FROM NAS_FOLDER F
+              JOIN FOLDER_TREE FT
+                ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+             WHERE F.USER_CODE = #{userCode}
+               AND F.DELETE_YN = 'N'
+               AND F.FOLDER_ID <![CDATA[ <> ]]> F.PARENT_FOLDER_ID
+        )
+        UPDATE NAS_FILE_PREVIEW P
+           SET DELETE_YN = 'Y',
+               DELETED_AT = NOW()
+         WHERE P.DELETE_YN = 'N'
+           AND P.FILE_ID IN (
+               SELECT F.FILE_ID
+                 FROM NAS_FILE F
+                WHERE F.USER_CODE = #{userCode}
+                  AND F.DELETE_YN = 'N'
+                  AND F.FOLDER_ID IN (SELECT FOLDER_ID FROM FOLDER_TREE)
+           )
+    </update>
+
+    <update id="moveFolderFilesToTrash">
+        WITH RECURSIVE FOLDER_TREE AS (
+            SELECT FOLDER_ID
+              FROM NAS_FOLDER
+             WHERE USER_CODE = #{userCode}
+               AND FOLDER_ID = #{folderId}
+               AND DELETE_YN = 'N'
+            UNION ALL
+            SELECT F.FOLDER_ID
+              FROM NAS_FOLDER F
+              JOIN FOLDER_TREE FT
+                ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+             WHERE F.USER_CODE = #{userCode}
+               AND F.DELETE_YN = 'N'
+               AND F.FOLDER_ID <![CDATA[ <> ]]> F.PARENT_FOLDER_ID
+        )
+        UPDATE NAS_FILE
+           SET DELETE_YN = 'Y',
+               DELETED_AT = NOW(),
+               TRASH_ID = #{trashId}
+         WHERE USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
+           AND FOLDER_ID IN (SELECT FOLDER_ID FROM FOLDER_TREE)
+    </update>
+
+    <update id="moveFolderTreeToTrash">
+        WITH RECURSIVE FOLDER_TREE AS (
+            SELECT FOLDER_ID
+              FROM NAS_FOLDER
+             WHERE USER_CODE = #{userCode}
+               AND FOLDER_ID = #{folderId}
+               AND DELETE_YN = 'N'
+            UNION ALL
+            SELECT F.FOLDER_ID
+              FROM NAS_FOLDER F
+              JOIN FOLDER_TREE FT
+                ON F.PARENT_FOLDER_ID = FT.FOLDER_ID
+             WHERE F.USER_CODE = #{userCode}
+               AND F.DELETE_YN = 'N'
+               AND F.FOLDER_ID <![CDATA[ <> ]]> F.PARENT_FOLDER_ID
+        )
+        UPDATE NAS_FOLDER
+           SET DELETE_YN = 'Y',
+               DELETED_AT = NOW(),
+               TRASH_ID = #{trashId}
+         WHERE USER_CODE = #{userCode}
+           AND DELETE_YN = 'N'
+           AND FOLDER_ID IN (SELECT FOLDER_ID FROM FOLDER_TREE)
+    </update>
+
+    <!-- 휴지통 화면에는 각 삭제 요청의 루트 항목만 한 행으로 노출한다. -->
+    <select id="selectTrashItems" resultType="org.hooni.api.model.v1.trash.TrashItem">
+        SELECT T.TRASH_ID,
+               COALESCE(F.FILE_ID, D.FOLDER_ID) AS ITEM_ID,
+               COALESCE(F.ORIGIN_NAME, D.FOLDER_NAME) AS ITEM_NAME,
+               T.ROOT_ITEM_TYPE AS ITEM_TYPE,
+               COALESCE(F.FILE_SIZE, 0) AS ITEM_SIZE,
+               F.EXTENSION,
+               T.ORIGINAL_PARENT_ID,
+               TO_CHAR(T.DELETED_AT, 'YYYY-MM-DD HH24:MI:SS') AS DELETED_AT,
+               TO_CHAR(T.EXPIRES_AT, 'YYYY-MM-DD HH24:MI:SS') AS EXPIRES_AT,
+               GREATEST(
+                   0,
+                   CEIL(EXTRACT(EPOCH FROM (T.EXPIRES_AT - NOW())) / 86400)::INTEGER
+               ) AS REMAINING_DAYS,
+               T.PURGE_STATUS
+          FROM NAS_TRASH_ENTRY T
+          LEFT JOIN NAS_FILE F
+            ON T.ROOT_ITEM_TYPE = 'FILE'
+           AND F.FILE_ID = T.ROOT_ITEM_ID
+           AND F.TRASH_ID = T.TRASH_ID
+          LEFT JOIN NAS_FOLDER D
+            ON T.ROOT_ITEM_TYPE = 'FOLDER'
+           AND D.FOLDER_ID = T.ROOT_ITEM_ID
+           AND D.TRASH_ID = T.TRASH_ID
+         WHERE T.USER_CODE = #{userCode}
+           AND T.PURGE_STATUS = 'ACTIVE'
+        <if test="keyword != null and keyword != ''">
+           AND COALESCE(F.ORIGIN_NAME, D.FOLDER_NAME, '') ILIKE '%' || #{keyword} || '%'
+        </if>
+         ORDER BY T.DELETED_AT DESC, T.TRASH_ID
+         LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countTrashItems" resultType="long">
+        SELECT COUNT(*)
+          FROM NAS_TRASH_ENTRY T
+          LEFT JOIN NAS_FILE F
+            ON T.ROOT_ITEM_TYPE = 'FILE'
+           AND F.FILE_ID = T.ROOT_ITEM_ID
+           AND F.TRASH_ID = T.TRASH_ID
+          LEFT JOIN NAS_FOLDER D
+            ON T.ROOT_ITEM_TYPE = 'FOLDER'
+           AND D.FOLDER_ID = T.ROOT_ITEM_ID
+           AND D.TRASH_ID = T.TRASH_ID
+         WHERE T.USER_CODE = #{userCode}
+           AND T.PURGE_STATUS = 'ACTIVE'
+        <if test="keyword != null and keyword != ''">
+           AND COALESCE(F.ORIGIN_NAME, D.FOLDER_NAME, '') ILIKE '%' || #{keyword} || '%'
+        </if>
+    </select>
+
+    <!--
+        휴지통 전용 썸네일 조회다. TRASH_ID와 사용자 조건을 함께 확인하여
+        논리 삭제된 파일이라도 보관 기간 중에는 기존 썸네일을 안전하게 재사용한다.
+    -->
+    <select id="selectTrashThumbnail" resultType="org.hooni.api.model.v1.file.FilePreview">
+        SELECT P.STORAGE_PATH,
+               P.STORED_NAME
+          FROM NAS_TRASH_ENTRY T
+          JOIN NAS_FILE F
+            ON T.ROOT_ITEM_TYPE = 'FILE'
+           AND F.FILE_ID = T.ROOT_ITEM_ID
+           AND F.TRASH_ID = T.TRASH_ID
+           AND F.DELETE_YN = 'Y'
+          JOIN NAS_FILE_PREVIEW P
+            ON P.FILE_ID = F.FILE_ID
+           AND P.DELETE_YN = 'Y'
+         WHERE T.USER_CODE = #{userCode}
+           AND T.TRASH_ID = #{trashId}
+           AND T.PURGE_STATUS = 'ACTIVE'
+    </select>
+
+    <!-- 요청한 항목이 모두 로그인 사용자의 복원 가능한 항목인지 검증한다. -->
+    <select id="countOwnedActiveTrashEntries" resultType="int">
+        SELECT COUNT(*)
+          FROM NAS_TRASH_ENTRY
+         WHERE USER_CODE = #{userCode}
+           AND PURGE_STATUS = 'ACTIVE'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+    </select>
+
+    <!--
+        원래 부모가 활성 상태가 아니고, 같은 요청에서 함께 복원되지도 않는 경우에만
+        복원 위치를 사용자 루트 폴더로 변경한다.
+    -->
+    <update id="moveOrphanFileRootsToUserRoot">
+        UPDATE NAS_FILE F
+           SET FOLDER_ID = (
+               SELECT R.FOLDER_ID
+                 FROM NAS_FOLDER R
+                WHERE R.USER_CODE = #{userCode}
+                  AND R.FOLDER_ID = R.PARENT_FOLDER_ID
+                  AND R.DELETE_YN = 'N'
+                LIMIT 1
+           )
+          FROM NAS_TRASH_ENTRY T
+         WHERE T.USER_CODE = #{userCode}
+           AND T.PURGE_STATUS = 'ACTIVE'
+           AND T.ROOT_ITEM_TYPE = 'FILE'
+           AND T.TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+           AND F.FILE_ID = T.ROOT_ITEM_ID
+           AND F.TRASH_ID = T.TRASH_ID
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER P
+                WHERE P.USER_CODE = #{userCode}
+                  AND P.FOLDER_ID = F.FOLDER_ID
+                  AND P.DELETE_YN = 'N'
+           )
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER P
+                WHERE P.USER_CODE = #{userCode}
+                  AND P.FOLDER_ID = F.FOLDER_ID
+                  AND P.TRASH_ID IN
+               <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+                   #{trashId}
+               </foreach>
+           )
+    </update>
+
+    <update id="moveOrphanFolderRootsToUserRoot">
+        UPDATE NAS_FOLDER F
+           SET PARENT_FOLDER_ID = (
+               SELECT R.FOLDER_ID
+                 FROM NAS_FOLDER R
+                WHERE R.USER_CODE = #{userCode}
+                  AND R.FOLDER_ID = R.PARENT_FOLDER_ID
+                  AND R.DELETE_YN = 'N'
+                LIMIT 1
+           )
+          FROM NAS_TRASH_ENTRY T
+         WHERE T.USER_CODE = #{userCode}
+           AND T.PURGE_STATUS = 'ACTIVE'
+           AND T.ROOT_ITEM_TYPE = 'FOLDER'
+           AND T.TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+           AND F.FOLDER_ID = T.ROOT_ITEM_ID
+           AND F.TRASH_ID = T.TRASH_ID
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER P
+                WHERE P.USER_CODE = #{userCode}
+                  AND P.FOLDER_ID = F.PARENT_FOLDER_ID
+                  AND P.DELETE_YN = 'N'
+           )
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER P
+                WHERE P.USER_CODE = #{userCode}
+                  AND P.FOLDER_ID = F.PARENT_FOLDER_ID
+                  AND P.TRASH_ID IN
+               <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+                   #{trashId}
+               </foreach>
+           )
+    </update>
+
+    <!-- 파일 미리보기부터 활성화한 후 폴더와 파일의 TRASH_ID를 해제한다. -->
+    <update id="restorePreviews">
+        UPDATE NAS_FILE_PREVIEW P
+           SET DELETE_YN = 'N',
+               DELETED_AT = NULL
+         WHERE P.DELETE_YN = 'Y'
+           AND P.FILE_ID IN (
+               SELECT F.FILE_ID
+                 FROM NAS_FILE F
+                WHERE F.USER_CODE = #{userCode}
+                  AND F.DELETE_YN = 'Y'
+                  AND F.TRASH_ID IN
+               <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+                   #{trashId}
+               </foreach>
+           )
+    </update>
+
+    <update id="restoreFolders">
+        UPDATE NAS_FOLDER
+           SET DELETE_YN = 'N',
+               DELETED_AT = NULL,
+               TRASH_ID = NULL
+         WHERE USER_CODE = #{userCode}
+           AND DELETE_YN = 'Y'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+    </update>
+
+    <update id="restoreFiles">
+        UPDATE NAS_FILE
+           SET DELETE_YN = 'N',
+               DELETED_AT = NULL,
+               TRASH_ID = NULL
+         WHERE USER_CODE = #{userCode}
+           AND DELETE_YN = 'Y'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+    </update>
+
+    <select id="selectActiveTrashIdsByUser" resultType="string">
+        SELECT TRASH_ID::TEXT
+          FROM NAS_TRASH_ENTRY
+         WHERE USER_CODE = #{userCode}
+           AND PURGE_STATUS = 'ACTIVE'
+         ORDER BY DELETED_AT
+    </select>
+
+    <!-- 보관 기간이 지난 ACTIVE 항목을 스케줄러의 한 번 처리량만큼 조회한다. -->
+    <select id="selectExpiredTrashIds" resultType="string">
+        SELECT TRASH_ID::TEXT
+          FROM NAS_TRASH_ENTRY
+         WHERE PURGE_STATUS = 'ACTIVE'
+           AND EXPIRES_AT &lt;= NOW()
+         ORDER BY EXPIRES_AT
+         LIMIT #{limit}
+    </select>
+
+    <!-- 영구삭제 전에 실제 저장소에서 제거할 원본·미리보기 경로를 조회한다. -->
+    <select id="selectFilesForPurge" resultType="org.hooni.api.model.v1.file.ExpiredDeletedFile">
+        SELECT F.FILE_ID,
+               F.STORAGE_PATH,
+               F.STORED_NAME,
+               P.STORAGE_PATH AS PREVIEW_STORAGE_PATH,
+               P.STORED_NAME AS PREVIEW_STORED_NAME
+          FROM NAS_FILE F
+          LEFT JOIN NAS_FILE_PREVIEW P
+            ON P.FILE_ID = F.FILE_ID
+         WHERE F.DELETE_YN = 'Y'
+           AND F.TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND F.USER_CODE = #{userCode}
+        </if>
+    </select>
+
+    <!-- ACTIVE 상태만 PURGING으로 전환하므로 동시에 들어온 복원·삭제 요청 중 하나만 처리된다. -->
+    <update id="markTrashEntriesPurging">
+        UPDATE NAS_TRASH_ENTRY
+           SET PURGE_STATUS = 'PURGING',
+               PURGE_REQUESTED_AT = NOW(),
+               PURGE_ERROR = NULL,
+               UPDATED_AT = NOW()
+         WHERE PURGE_STATUS = 'ACTIVE'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND USER_CODE = #{userCode}
+        </if>
+    </update>
+
+    <delete id="deletePreviewMetadataByTrashIds">
+        DELETE FROM NAS_FILE_PREVIEW P
+         WHERE P.FILE_ID IN (
+             SELECT F.FILE_ID
+               FROM NAS_FILE F
+              WHERE F.DELETE_YN = 'Y'
+                AND F.TRASH_ID IN
+             <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+                 #{trashId}
+             </foreach>
+             <if test="userCode != null and userCode != ''">
+                AND F.USER_CODE = #{userCode}
+             </if>
+         )
+    </delete>
+
+    <delete id="deleteFileMetadataByTrashIds">
+        DELETE FROM NAS_FILE
+         WHERE DELETE_YN = 'Y'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND USER_CODE = #{userCode}
+        </if>
+    </delete>
+
+    <!-- 자기 참조 관계를 지키기 위해 자식 파일과 하위 폴더가 없는 리프 폴더만 삭제한다. -->
+    <delete id="deleteLeafFoldersByTrashIds">
+        DELETE FROM NAS_FOLDER F
+         WHERE F.DELETE_YN = 'Y'
+           AND F.FOLDER_ID <![CDATA[ <> ]]> F.PARENT_FOLDER_ID
+           AND F.TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND F.USER_CODE = #{userCode}
+        </if>
+           AND NOT EXISTS (
+               SELECT 1 FROM NAS_FILE C WHERE C.FOLDER_ID = F.FOLDER_ID
+           )
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM NAS_FOLDER C
+                WHERE C.PARENT_FOLDER_ID = F.FOLDER_ID
+                  AND C.FOLDER_ID <![CDATA[ <> ]]> C.PARENT_FOLDER_ID
+           )
+    </delete>
+
+    <!-- 다른 삭제 묶음의 자식이 남은 폴더는 tombstone으로 보존하되 현재 TRASH_ID 연결만 해제한다. -->
+    <update id="detachRemainingFoldersFromTrash">
+        UPDATE NAS_FOLDER
+           SET TRASH_ID = NULL
+         WHERE DELETE_YN = 'Y'
+           AND TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND USER_CODE = #{userCode}
+        </if>
+    </update>
+
+    <delete id="deleteTrashEntries">
+        DELETE FROM NAS_TRASH_ENTRY
+         WHERE TRASH_ID IN
+        <foreach collection="trashIds" item="trashId" open="(" separator="," close=")">
+            #{trashId}
+        </foreach>
+        <if test="userCode != null and userCode != ''">
+           AND USER_CODE = #{userCode}
+        </if>
+    </delete>
+
+</mapper>
